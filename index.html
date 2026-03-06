@@ -79,7 +79,7 @@
     }
     .nav-logo-name {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.5rem;
+      font-size: 2rem;
       font-weight: 300;
       letter-spacing: 0.25em;
       color: var(--gold);
@@ -88,7 +88,7 @@
     }
     .nav-logo-sub {
       font-family: 'Syne', sans-serif;
-      font-size: 0.55rem;
+      font-size: 0.65rem;
       font-weight: 300;
       letter-spacing: 0.22em;
       color: var(--teal);
@@ -132,7 +132,7 @@
 
     .hero-title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(2.8rem, 7vw, 6.5rem);
+      font-size: clamp(2.4rem, 6vw, 5.5rem);
       font-weight: 300;
       line-height: 1.0;
       letter-spacing: 0.04em;
@@ -228,9 +228,13 @@
       align-items: center;
       justify-content: center;
       gap: 24px;
-      padding: 20px 60px 20px;
+      padding: 40px 60px;
       opacity: 0;
       animation: fadeIn 1s ease 2s forwards;
+    }
+    .divider.static {
+      opacity: 1;
+      animation: none;
     }
     .divider-line {
       flex: 1; max-width: 200px; height: 1px;
@@ -426,6 +430,12 @@
     </div>
   </section>
 
+  <div class="divider static">
+    <div class="divider-line"></div>
+    <span class="divider-glyph">✦</span>
+    <div class="divider-line right"></div>
+  </div>
+
   <section class="systems" id="systems">
     <p class="systems-label">Integrated Knowledge Systems</p>
     <h2 class="systems-heading">Every map you've ever needed.<br/>Finally, in one place.</h2>
@@ -446,9 +456,21 @@
     </p>
   </section>
 
+  <div class="divider static">
+    <div class="divider-line"></div>
+    <span class="divider-glyph">✦</span>
+    <div class="divider-line right"></div>
+  </div>
+
   <div class="quote-section">
     <p class="quote-text">"The moment you observe a pattern, <em>you create distance from it.</em> That distance is where change becomes possible."</p>
     <span class="quote-source">The Temenos Principle</span>
+  </div>
+
+  <div class="divider static">
+    <div class="divider-line"></div>
+    <span class="divider-glyph">✦</span>
+    <div class="divider-line right"></div>
   </div>
 
   <section class="pricing" id="pricing">
