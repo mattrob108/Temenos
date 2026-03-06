@@ -22,6 +22,9 @@
       --glass-border: rgba(255,255,255,0.07);
     }
 
+    /* Global descender protection — prevents g, y, p clipping on small text */
+    p, span, li, a { overflow: visible; }
+
     html { scroll-behavior: smooth; }
 
     body {
@@ -69,7 +72,9 @@
       justify-content: space-between;
       align-items: center;
       padding: 28px 60px;
-      background: linear-gradient(to bottom, rgba(4,5,10,0.9), transparent);
+      background: rgba(4, 5, 10, 0.65);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
     }
 
     .nav-logo {
@@ -84,7 +89,7 @@
       letter-spacing: 0.25em;
       color: var(--gold);
       text-transform: uppercase;
-      line-height: 1;
+      line-height: 1.2;
     }
     .nav-logo-sub {
       font-family: 'Syne', sans-serif;
@@ -93,7 +98,8 @@
       letter-spacing: 0.22em;
       color: var(--teal);
       text-transform: uppercase;
-      line-height: 1;
+      line-height: 1.8;
+      padding-bottom: 2px;
     }
 
     .nav-links { display: flex; gap: 40px; list-style: none; }
@@ -178,38 +184,51 @@
       text-decoration: none;
       position: relative;
       overflow: hidden;
-      transition: color 0.4s;
+      transition: color 0.35s ease, background 0.35s ease;
     }
-    .btn-primary::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--gold);
-      transform: translateX(-101%);
-      transition: transform 0.4s cubic-bezier(0.77,0,0.18,1);
-      z-index: -1;
+    .btn-primary:hover { color: var(--void); background: var(--gold); }
+
+    .btn-teal {
+      display: inline-block;
+      padding: 16px 48px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--teal);
+      background: transparent;
+      border: 1px solid var(--teal);
+      transition: color 0.35s ease, background 0.35s ease;
+      cursor: pointer;
     }
-    .btn-primary:hover { color: var(--void); }
-    .btn-primary:hover::before { transform: translateX(0); }
+    .btn-teal:hover { background: var(--teal); color: var(--void); }
 
     .btn-ghost {
+      display: inline-block;
       color: var(--teal);
+      font-family: 'Syne', sans-serif;
       font-size: 0.72rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
       text-decoration: none;
       border: 1px solid var(--teal);
       padding: 16px 48px;
-      transition: color 0.3s, background 0.3s;
+      background: transparent;
+      transition: color 0.35s ease, background 0.35s ease;
     }
-    .btn-ghost:hover { background: rgba(78,205,196,0.08); color: var(--teal); }
+    .btn-ghost:hover { background: var(--teal); color: var(--void); }
 
     .sphere-container {
       position: relative;
-      margin-top: 28px;
+      margin-top: 40px;
+      margin-bottom: 40px;
       opacity: 0;
       animation: fadeIn 2s ease 1.5s forwards;
+      cursor: grab;
     }
+    .sphere-container:active { cursor: grabbing; }
     #sphere-canvas { display: block; margin: 0 auto; }
     .sphere-glow {
       position: absolute;
@@ -255,6 +274,8 @@
       text-transform: uppercase;
       color: var(--violet);
       margin-bottom: 64px;
+      line-height: 2;
+      padding-bottom: 4px;
     }
     .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
 
@@ -291,7 +312,7 @@
       padding: 20px 60px 60px;
       max-width: 1200px; margin: 0 auto; text-align: center;
     }
-    .systems-label { font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--teal); margin-bottom: 20px; }
+    .systems-label { font-size: 0.82rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--teal); margin-bottom: 20px; line-height: 2; padding-bottom: 4px; }
     .systems-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 300; margin-bottom: 60px; line-height: 1.2; }
     .systems-orbit { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 700px; margin: 0 auto 24px; }
     .system-pill {
@@ -307,19 +328,21 @@
       padding: 20px 60px 60px;
       max-width: 900px; margin: 0 auto; text-align: center;
     }
-    .pricing-label { font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--ember); margin-bottom: 20px; }
-    .pricing-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 300; margin-bottom: 60px; }
+    .pricing-label { font-size: 0.82rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--ember); margin-bottom: 20px; line-height: 2; padding-bottom: 4px; }
+    .pricing-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 300; margin-bottom: 60px; }
     .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
 
     .pricing-card { background: var(--glass); border: 1px solid var(--glass-border); padding: 52px 40px; text-align: left; position: relative; }
-    .pricing-card.featured { border-color: rgba(201,169,110,0.3); background: rgba(201,169,110,0.04); }
+    .pricing-card.featured { border-color: rgba(78,205,196,0.3); background: rgba(78,205,196,0.04); }
     .pricing-card.featured::after {
       content: 'MOST POPULAR';
       position: absolute; top: -1px; right: 28px;
-      background: var(--gold); color: var(--void);
+      background: var(--teal); color: var(--void);
       font-size: 0.55rem; letter-spacing: 0.2em; padding: 5px 12px;
     }
-    .pricing-tier { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    .pricing-tier { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; line-height: 2; padding-bottom: 4px; }
+    .pricing-tier.gold { color: var(--gold); }
+    .pricing-tier.teal { color: var(--teal); }
     .pricing-price { font-family: 'Cormorant Garamond', serif; font-size: 3.5rem; font-weight: 300; line-height: 1; margin-bottom: 8px; }
     .pricing-price span { font-size: 1.2rem; color: var(--muted); }
     .pricing-period { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 36px; }
@@ -334,7 +357,7 @@
     .quote-section { position: relative; z-index: 10; padding: 40px 60px 40px; text-align: center; max-width: 800px; margin: 0 auto; }
     .quote-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.4rem, 3vw, 2.2rem); font-weight: 300; font-style: italic; line-height: 1.6; color: var(--muted); margin-bottom: 24px; }
     .quote-text em { color: var(--text); font-style: normal; }
-    .quote-source { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); opacity: 0.6; }
+    .quote-source { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); line-height: 2; padding-bottom: 4px; display: inline-block; }
 
     footer {
       position: relative; z-index: 10;
@@ -478,7 +501,7 @@
     <h2 class="pricing-heading">Begin for free.<br/>Go deeper when you're ready.</h2>
     <div class="pricing-grid">
       <div class="pricing-card">
-        <p class="pricing-tier">Explorer</p>
+        <p class="pricing-tier gold">Explorer</p>
         <div class="pricing-price">Free</div>
         <p class="pricing-period">Always free</p>
         <ul class="pricing-features">
@@ -490,7 +513,7 @@
         <a href="#" class="btn-primary" style="display:block; text-align:center;">Generate your sphere</a>
       </div>
       <div class="pricing-card featured">
-        <p class="pricing-tier">Initiate</p>
+        <p class="pricing-tier teal">Initiate</p>
         <div class="pricing-price">$12<span>/mo</span></div>
         <p class="pricing-period">Billed monthly · cancel anytime</p>
         <ul class="pricing-features">
@@ -501,7 +524,7 @@
           <li>Journal and personal notes</li>
           <li>Pattern analysis across systems</li>
         </ul>
-        <a href="#" class="btn-primary" style="display:block; text-align:center;">Begin your journey</a>
+        <a href="#" class="btn-teal" style="display:block; text-align:center;">Unlock your sphere</a>
       </div>
     </div>
   </section>
@@ -560,7 +583,56 @@
     const sc = document.getElementById('sphere-canvas');
     const sctx = sc.getContext('2d');
     const CX = 190, CY = 190, R = 140;
-    let angle = 0;
+
+    // Rotation state — angleX = vertical tilt, angleY = horizontal spin
+    let angleY = 0;       // auto-rotates, also dragged left/right
+    let angleX = 0.2;     // slight downward tilt by default
+    let isDragging = false;
+    let lastX = 0, lastY = 0;
+    let velX = 0, velY = 0; // momentum
+
+    // Drag events
+    sc.addEventListener('mousedown', e => {
+      isDragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      velX = 0; velY = 0;
+    });
+    window.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      velX = dy * 0.008;
+      velY = dx * 0.008;
+      angleX += velX;
+      angleY += velY;
+      // Clamp vertical rotation so it doesn't flip
+      angleX = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, angleX));
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    // Touch support
+    sc.addEventListener('touchstart', e => {
+      isDragging = true;
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+      velX = 0; velY = 0;
+    });
+    window.addEventListener('touchmove', e => {
+      if (!isDragging) return;
+      const dx = e.touches[0].clientX - lastX;
+      const dy = e.touches[0].clientY - lastY;
+      velX = dy * 0.008;
+      velY = dx * 0.008;
+      angleX += velX;
+      angleY += velY;
+      angleX = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, angleX));
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+    });
+    window.addEventListener('touchend', () => { isDragging = false; });
 
     const nodeColors = ['#c9a96e','#4ecdc4','#9b72cf','#e8705a','#6ec9b4','#c96eb4'];
     const nodes = Array.from({length: 28}, (_, i) => {
@@ -569,18 +641,46 @@
       return { phi, theta, color: nodeColors[i % nodeColors.length], size: Math.random() * 3 + 2, pulse: Math.random() * Math.PI * 2 };
     });
 
-    function project(phi, theta, rot) {
-      const x = Math.sin(phi) * Math.cos(theta + rot);
-      const y = Math.cos(phi);
-      const z = Math.sin(phi) * Math.sin(theta + rot);
-      return { x: CX + x * R, y: CY - y * R, z, scale: (z + 1.5) / 2.5 };
+    // Project with both X and Y rotation
+    function project(phi, theta, rotY, rotX) {
+      // Spherical to cartesian
+      let x = Math.sin(phi) * Math.cos(theta);
+      let y = Math.cos(phi);
+      let z = Math.sin(phi) * Math.sin(theta);
+
+      // Rotate around Y axis (horizontal drag / auto-spin)
+      const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+      const x1 = x * cosY + z * sinY;
+      const z1 = -x * sinY + z * cosY;
+
+      // Rotate around X axis (vertical drag)
+      const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+      const y2 = y * cosX - z1 * sinX;
+      const z2 = y * sinX + z1 * cosX;
+
+      return {
+        x: CX + x1 * R,
+        y: CY - y2 * R,
+        z: z2,
+        scale: (z2 + 1.5) / 2.5
+      };
     }
 
     function drawSphere() {
       sctx.clearRect(0, 0, 380, 380);
-      angle += 0.004;
       const t = Date.now() * 0.001;
 
+      // Auto-rotate when not dragging, apply momentum on release
+      if (!isDragging) {
+        angleY -= 0.004;
+        // Dampen momentum
+        velX *= 0.92; velY *= 0.92;
+        angleX += velX * 0.3;
+        angleY += velY * 0.3;
+        angleX = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, angleX));
+      }
+
+      // Core glow
       const grad = sctx.createRadialGradient(CX, CY, 0, CX, CY, R * 0.6);
       grad.addColorStop(0, 'rgba(155,114,207,0.08)');
       grad.addColorStop(1, 'transparent');
@@ -589,26 +689,32 @@
       sctx.arc(CX, CY, R * 0.6, 0, Math.PI * 2);
       sctx.fill();
 
+      // Sphere outline
       sctx.beginPath();
       sctx.arc(CX, CY, R, 0, Math.PI * 2);
       sctx.strokeStyle = 'rgba(255,255,255,0.2)';
       sctx.lineWidth = 1;
       sctx.stroke();
 
+      // Latitude lines — now respond to X rotation
       for (let lat = -60; lat <= 60; lat += 30) {
         const latR = Math.cos(lat * Math.PI / 180) * R;
-        const latY = CY - Math.sin(lat * Math.PI / 180) * R;
+        const baseY = Math.sin(lat * Math.PI / 180) * R;
+        // Tilt the latitude ring with angleX
+        const tiltedY = baseY * Math.cos(angleX);
+        const tiltedRY = latR * Math.abs(Math.cos(angleX)) * 0.18 + Math.abs(Math.sin(angleX)) * latR * 0.5;
         sctx.beginPath();
-        sctx.ellipse(CX, latY, latR, latR * 0.18, 0, 0, Math.PI * 2);
+        sctx.ellipse(CX, CY - tiltedY, latR, Math.max(2, tiltedRY), 0, 0, Math.PI * 2);
         sctx.strokeStyle = 'rgba(255,255,255,0.18)';
         sctx.lineWidth = 1;
         sctx.stroke();
       }
 
-      // Projected nodes
-      const projected = nodes.map(n => ({ ...n, ...project(n.phi, n.theta, angle) }));
+      // Project nodes
+      const projected = nodes.map(n => ({ ...n, ...project(n.phi, n.theta, angleY, angleX) }));
       projected.sort((a, b) => a.z - b.z);
 
+      // Connections
       projected.forEach((a, i) => {
         projected.slice(i+1).forEach(b => {
           const dx = a.x - b.x, dy = a.y - b.y;
@@ -625,20 +731,107 @@
         });
       });
 
+      // Sun position — right side, moderate height to catch middle-right nodes
+      const sunX = 1.6, sunY = 0.6, sunZ = 1.0;
+      const sunLen = Math.sqrt(sunX*sunX + sunY*sunY + sunZ*sunZ);
+      const sun = { x: sunX/sunLen, y: sunY/sunLen, z: sunZ/sunLen };
+
+      // Nodes
       projected.forEach(n => {
         if (n.z < -0.3) return;
         const pulse = Math.sin(t * 1.5 + n.pulse) * 0.3 + 0.7;
         const size = n.size * n.scale * pulse;
         const alpha = Math.max(0, n.scale) * (n.z > 0 ? 1 : 0.3);
-        sctx.shadowBlur = size * 6;
-        sctx.shadowColor = n.color;
+
+        // Surface normal
+        const nx = (n.x - CX) / R;
+        const ny = -(n.y - CY) / R;
+        const nz = n.z;
+
+        // Lighting
+        const diffuse = Math.max(0, nx * sun.x + ny * sun.y + nz * sun.z);
+        const specular = Math.pow(diffuse, 12) * 1.0;
+        const ambient = 0.22;
+        const light = ambient + diffuse * 0.82 + specular;
+
+        const hex = n.color;
+        const r = parseInt(hex.slice(1,3),16);
+        const g = parseInt(hex.slice(3,5),16);
+        const b = parseInt(hex.slice(5,7),16);
+
+        const lr = Math.min(255, r * light + 255 * specular * 0.7);
+        const lg = Math.min(255, g * light + 255 * specular * 0.7);
+        const lb = Math.min(255, b * light + 255 * specular * 0.7);
+
+        // Outer glow
+        sctx.shadowBlur = size * (6 + diffuse * 14);
+        sctx.shadowColor = `rgba(${r},${g},${b},${0.55 + diffuse * 0.45})`;
         sctx.beginPath();
         sctx.arc(n.x, n.y, size, 0, Math.PI * 2);
-        const hex = n.color;
-        const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-        sctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+        sctx.fillStyle = `rgba(${Math.round(lr)},${Math.round(lg)},${Math.round(lb)},${alpha})`;
         sctx.fill();
         sctx.shadowBlur = 0;
+
+        // Second glow pass for lit nodes
+        if (diffuse > 0.4) {
+          sctx.shadowBlur = size * 10;
+          sctx.shadowColor = `rgba(${r},${g},${b},${diffuse * 0.5})`;
+          sctx.beginPath();
+          sctx.arc(n.x, n.y, size * 0.6, 0, Math.PI * 2);
+          sctx.fillStyle = `rgba(${Math.round(lr)},${Math.round(lg)},${Math.round(lb)},${alpha * diffuse * 0.6})`;
+          sctx.fill();
+          sctx.shadowBlur = 0;
+        }
+
+        // Specular flare — bright with halo
+        if (specular > 0.25) {
+          const flareAlpha = Math.min(1, specular * alpha * 1.4);
+          const flareRGB = '201,169,110';
+          const cx = n.x - size * 0.3, cy = n.y - size * 0.3;
+
+          // Outer halo — large soft gold bloom
+          sctx.shadowBlur = size * 18;
+          sctx.shadowColor = `rgba(${flareRGB},${flareAlpha * 0.9})`;
+          sctx.beginPath();
+          sctx.arc(cx, cy, size * 1.8, 0, Math.PI * 2);
+          sctx.fillStyle = `rgba(${flareRGB},${flareAlpha * 0.15})`;
+          sctx.fill();
+
+          // Mid halo ring
+          sctx.shadowBlur = size * 10;
+          sctx.shadowColor = `rgba(${flareRGB},${flareAlpha})`;
+          sctx.beginPath();
+          sctx.arc(cx, cy, size * 0.9, 0, Math.PI * 2);
+          sctx.fillStyle = `rgba(${flareRGB},${flareAlpha * 0.35})`;
+          sctx.fill();
+
+          // Bright core
+          sctx.shadowBlur = size * 6;
+          sctx.shadowColor = `rgba(${flareRGB},1)`;
+          sctx.beginPath();
+          sctx.arc(cx, cy, size * 0.4, 0, Math.PI * 2);
+          sctx.fillStyle = `rgba(${flareRGB},${flareAlpha})`;
+          sctx.fill();
+
+          // 8-point starburst
+          sctx.shadowBlur = 0;
+          const rayLen = size * (2.2 + specular * 4);
+          const shortRay = rayLen * 0.55;
+
+          // Primary 4 rays
+          sctx.strokeStyle = `rgba(${flareRGB},${flareAlpha * 0.7})`;
+          sctx.lineWidth = 0.9;
+          sctx.beginPath(); sctx.moveTo(cx - rayLen, cy); sctx.lineTo(cx + rayLen, cy); sctx.stroke();
+          sctx.beginPath(); sctx.moveTo(cx, cy - rayLen); sctx.lineTo(cx, cy + rayLen); sctx.stroke();
+
+          // Diagonal 4 rays
+          sctx.strokeStyle = `rgba(${flareRGB},${flareAlpha * 0.4})`;
+          sctx.lineWidth = 0.6;
+          sctx.beginPath(); sctx.moveTo(cx - shortRay, cy - shortRay); sctx.lineTo(cx + shortRay, cy + shortRay); sctx.stroke();
+          sctx.beginPath(); sctx.moveTo(cx + shortRay, cy - shortRay); sctx.lineTo(cx - shortRay, cy + shortRay); sctx.stroke();
+
+          sctx.shadowBlur = 0;
+        }
       });
 
       requestAnimationFrame(drawSphere);
