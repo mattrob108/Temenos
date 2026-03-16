@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Temenos — Sphere</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Syne:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --void:#04050a;--gold:#c9a96e;--teal:#4ecdc4;--violet:#9b72cf;
+  --ember:#e8705a;--text:#e8e4dc;--muted:rgba(232,228,220,.42);
+  --gb:rgba(255,255,255,.06);--panel:rgba(4,5,10,.75);
+}
+html,body{height:100%;overflow:hidden;background:var(--void);color:var(--text);
+  font-family:'Syne',sans-serif;font-weight:300;}
+html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none!important;}
+#cdot{position:fixed;top:0;left:0;width:6px;height:6px;background:var(--gold);
+  border-radius:50%;pointer-events:none;z-index:2147483647;will-change:transform;
+  opacity:0;transform:translate(-300px,-300px);}
+#cring{position:fixed;top:0;left:0;width:22px;height:22px;
+  border:1px solid rgba(201,169,110,.5);border-radius:50%;pointer-events:none;
+  z-index:2147483646;will-change:transform;opacity:0;transform:translate(-300px,-300px);}
+.layout{display:grid;grid-template-columns:276px 1fr 368px;
+  grid-template-rows:52px 1fr;height:100vh;position:relative;z-index:1;}
+.topbar{grid-column:1/-1;display:flex;align-items:center;padding:0 20px;
+  border-bottom:1px solid var(--gb);background:rgba(4,5,10,.88);
+  backdrop-filter:blur(16px);gap:20px;}
+.t-logo{font-family:'Cormorant Garamond',serif;font-size:1.15rem;letter-spacing:.38em;
+  text-transform:uppercase;color:var(--gold);}
+.t-sub{font-size:.6rem;letter-spacing:.26em;text-transform:uppercase;color:#4ecdc4;}
+.t-user{margin-left:auto;font-size:.72rem;letter-spacing:.12em;color:var(--gold);}
+.t-user b{color:var(--teal);font-weight:400;}
+.left-panel{border-right:1px solid var(--gb);background:var(--panel);overflow-y:auto;padding:16px 0;}
+.left-panel::-webkit-scrollbar{width:2px;}
+.left-panel::-webkit-scrollbar-thumb{background:var(--gb);}
+.ps{padding:0 16px 18px;}
+.pl{font-size:.67rem;letter-spacing:.26em;text-transform:uppercase;color:var(--muted);
+  padding:6px 0 9px;border-bottom:1px solid var(--gb);margin-bottom:8px;}
+.si{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:3px;
+  margin-bottom:3px;border:1px solid transparent;}
+.si.on{background:rgba(201,169,110,.05);border-color:rgba(201,169,110,.1);}
+.si.on-t{background:rgba(78,205,196,.04);border-color:rgba(78,205,196,.09);}
+.si.off{opacity:.38;}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sn{font-size:.85rem;letter-spacing:.05em;}
+.sv{font-size:.69rem;color:var(--muted);margin-top:1px;}
+.sbadge{font-size:.44rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:2px 5px;border-radius:2px;white-space:nowrap;flex-shrink:0;margin-left:auto;
+  background:rgba(201,169,110,.1);color:var(--gold);border:1px solid rgba(201,169,110,.18);}
+.sbadge.lk{background:rgba(255,255,255,.03);color:var(--muted);border-color:var(--gb);}
+.drag-handle{font-size:.55rem;color:rgba(232,228,220,.22);cursor:grab;letter-spacing:-.05em;flex-shrink:0;padding:0 2px;user-select:none;}
+.drag-handle:active{cursor:grabbing;}
+.si.drag-over{border-color:rgba(201,169,110,.4)!important;background:rgba(201,169,110,.1)!important;}
+.si.dragging{opacity:.4;}
+.sys-icon{font-size:.85rem;flex-shrink:0;margin-left:auto;opacity:.7;line-height:1;}
+/* RIGHT PANEL SPLIT */
+.chat-panel{border-left:1px solid var(--gb);background:var(--panel);display:flex;flex-direction:column;}
+.pathway-section{display:flex;flex-direction:column;flex-shrink:0;border-bottom:1px solid var(--gb);min-height:0;}
+.companion-section{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
+/* SPHERE AREA */
+.sphere-area{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.s-title{position:absolute;top:22px;text-align:center;pointer-events:none;z-index:4;}
+.s-name{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:300;
+  letter-spacing:.32em;text-transform:uppercase;color:var(--text);}
+.s-date{font-size:.52rem;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-top:3px;}
+#sphere-canvas{display:block;z-index:2;position:relative;}
+.s-hint{position:absolute;bottom:18px;font-size:.5rem;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(232,228,220,.15);pointer-events:none;text-align:center;z-index:4;}
+
+/* GLASSMORPHISM MODAL */
+.modal-overlay{
+  position:absolute;inset:0;z-index:50;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease;
+}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-backdrop{
+  position:absolute;inset:0;
+  background:rgba(4,5,10,.35);
+  backdrop-filter:blur(2px);
+}
+.modal-card{
+  position:relative;z-index:1;
+  width:min(660px,88%);max-height:86vh;
+  background:rgba(8,12,24,.72);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;
+  backdrop-filter:blur(28px) saturate(1.4);
+  box-shadow:0 0 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.07);
+  overflow:hidden;
+  transform:scale(.94) translateY(10px);
+  transition:transform .35s cubic-bezier(.16,1,.3,1);
+}
+.modal-overlay.open .modal-card{transform:scale(1) translateY(0);}
+.modal-accent{height:3px;width:100%;}
+.modal-body{padding:32px 32px 28px;overflow-y:auto;max-height:calc(86vh - 3px);}
+.modal-body::-webkit-scrollbar{width:3px;}
+.modal-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);}
+.modal-sys-label{font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;margin-bottom:6px;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:1.85rem;font-weight:300;
+  letter-spacing:.04em;color:var(--text);line-height:1.2;margin-bottom:4px;}
+.modal-origin{font-size:.62rem;letter-spacing:.12em;color:var(--muted);margin-bottom:20px;}
+.modal-divider{height:1px;background:rgba(255,255,255,.07);margin:18px 0;}
+.modal-section-label{font-size:.52rem;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;}
+.modal-text{font-family:'Cormorant Garamond',serif;font-size:.98rem;line-height:1.9;
+  color:rgba(232,228,220,.82);font-style:normal;}
+.modal-text em{font-style:italic;color:var(--text);}
+.modal-text b{font-style:normal;font-weight:500;color:var(--text);}
+.modal-links{display:flex;flex-direction:column;gap:7px;margin-top:4px;}
+.modal-link{display:flex;align-items:center;gap:8px;font-size:.68rem;
+  color:rgba(232,228,220,.6);letter-spacing:.04em;text-decoration:none;
+  padding:8px 12px;border:1px solid rgba(255,255,255,.07);border-radius:4px;
+  background:rgba(255,255,255,.03);transition:background .2s,color .2s;}
+.modal-link:hover{background:rgba(255,255,255,.07);color:var(--text);}
+.modal-link-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.modal-close{position:absolute;top:16px;right:18px;background:none;border:none;
+  color:rgba(232,228,220,.4);font-size:1rem;z-index:2;}
+.modal-close:hover{color:var(--text);}
+
+/* SETTINGS */
+.setting-row{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+.setting-label{font-size:.72rem;letter-spacing:.05em;color:var(--text);}
+.setting-sub{font-size:.58rem;color:var(--muted);margin-top:2px;}
+.toggle-switch{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-knob{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:10px;
+  transition:.25s;border:1px solid rgba(255,255,255,.12);}
+.toggle-knob:before{content:'';position:absolute;width:14px;height:14px;left:2px;top:2px;
+  background:rgba(232,228,220,.5);border-radius:50%;transition:.25s;}
+.toggle-switch input:checked + .toggle-knob{background:rgba(201,169,110,.25);border-color:rgba(201,169,110,.45);}
+.toggle-switch input:checked + .toggle-knob:before{transform:translateX(16px);background:var(--gold);}
+
+/* CHAT */
+.chat-panel{border-left:1px solid var(--gb);background:var(--panel);display:flex;flex-direction:column;}
+.ch{padding:14px 18px 10px;border-bottom:1px solid var(--gb);flex-shrink:0;}
+.cht{font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);}
+.chs{font-size:.67rem;color:var(--muted);margin-top:2px;}
+.chat-msgs{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:10px;}
+.chat-msgs::-webkit-scrollbar{width:2px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--gb);}
+.msg{max-width:93%;}
+.msg-r{font-size:.45rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.msg-t{font-size:.69rem;line-height:1.72;color:rgba(232,228,220,.83);font-family:'Cormorant Garamond',serif;font-style:normal;}
+.msg.ai{align-self:flex-start;}
+.msg:not(.ai){align-self:flex-end;}
+.msg:not(.ai) .msg-r{text-align:right;}
+.msg:not(.ai) .msg-t{background:rgba(201,169,110,.06);border:1px solid rgba(201,169,110,.11);padding:6px 10px;border-radius:3px;}
+.typing span{display:inline-block;width:4px;height:4px;background:var(--gold);border-radius:50%;margin:0 2px;animation:tp 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:.2s;}
+.typing span:nth-child(3){animation-delay:.4s;}
+@keyframes tp{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.chat-sugg{padding:0 12px 8px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+.sqbtn{background:rgba(201,169,110,.05);border:1px solid rgba(201,169,110,.12);color:rgba(232,228,220,.62);font-family:'Cormorant Garamond',serif;font-size:.65rem;padding:5px 10px;border-radius:3px;text-align:left;line-height:1.35;}
+.sqbtn:hover{background:rgba(201,169,110,.09);color:var(--text);}
+.cia{padding:8px 12px 10px;border-top:1px solid var(--gb);flex-shrink:0;}
+.ciw{display:flex;gap:7px;align-items:flex-end;}
+.ci{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--gb);
+  color:var(--text);font-family:'Syne',sans-serif;font-size:.67rem;
+  padding:8px 11px;border-radius:3px;resize:none;line-height:1.5;max-height:90px;}
+.ci:focus{outline:none;border-color:rgba(201,169,110,.28);}
+.csend{background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.22);
+  color:var(--gold);padding:8px 12px;border-radius:3px;flex-shrink:0;}
+.csend:hover{background:rgba(201,169,110,.18);}
+.csend svg{width:13px;height:13px;display:block;}
+</style>
+</head>
+<body>
+
+<div id="cdot"></div>
+<div id="cring"></div>
+<canvas id="stars" style="position:fixed;inset:0;pointer-events:none;z-index:0;"></canvas>
+
+<div class="layout">
+  <header class="topbar">
+    <span class="t-logo">Temenos</span>
+    <span class="t-sub">Personal Consciousness Mapping</span>
+    <span class="t-user" style="text-align:right;">Welcome back, <b id="topbar-name">—</b><br><span style="font-size:.56rem;font-weight:300;letter-spacing:.1em;display:block;text-align:center;margin-top:2px;font-family:'Syne',sans-serif;"><span style="color:var(--gold);">Member Status: </span><span style="color:var(--teal);" id="topbar-plan">Explorer</span></span></span>
+  </header>
+
+  <aside class="left-panel">
+    <div class="ps">
+      <div class="pl">In Orbit</div>
+      <!-- Vedic -->
+      <div class="si on" data-sys="vedic" style="cursor:pointer;">
+        <span class="drag-handle">⋮⋮</span>
+        <div class="sdot" style="background:#dc9b5f"></div>
+        <div><div class="sn">Vedic Astrology</div><div class="sv">Sagittarius Rising · Leo Sun</div></div>
+        <span class="sys-icon" title="Vedic Astrology">☽</span>
+      </div>
+      <!-- Human Design -->
+      <div class="si on" data-sys="hd" style="cursor:pointer;">
+        <span class="drag-handle">⋮⋮</span>
+        <div class="sdot" style="background:#8b82cd"></div>
+        <div><div class="sn">Human Design</div><div class="sv">Manifesting Generator · 1/1</div></div>
+        <span class="sys-icon" title="Human Design">◈</span>
+      </div>
+      <!-- Gene Keys -->
+      <div class="si on" data-sys="genekeys" style="cursor:pointer;">
+        <span class="drag-handle">⋮⋮</span>
+        <div class="sdot" style="background:#d27870"></div>
+        <div><div class="sn">Gene Keys</div><div class="sv">Gate 39 · Dynamism</div></div>
+        <span class="sys-icon" title="Gene Keys">⬡</span>
+      </div>
+      <!-- Western Astrology -->
+      <div class="si on" data-sys="western" style="cursor:pointer;">
+        <span class="drag-handle">⋮⋮</span>
+        <div class="sdot" style="background:#c9a96e"></div>
+        <div><div class="sn">Western Astrology</div><div class="sv">Virgo Sun · Cap Rising</div></div>
+        <span class="sys-icon" title="Western Astrology">☀</span>
+      </div>
+      <!-- Chinese Astrology -->
+      <div class="si on" data-sys="chinese" style="cursor:pointer;">
+        <span class="drag-handle">⋮⋮</span>
+        <div class="sdot" style="background:#6ea8c0"></div>
+        <div><div class="sn">Chinese Astrology</div><div class="sv">Metal Horse · Fire Element</div></div>
+        <span class="sys-icon" title="Chinese Astrology">龍</span>
+      </div>
+    </div>
+    <div class="ps">
+      <div class="pl">Unlock to Add</div>
+      <div class="si off"><div class="sdot" style="background:var(--muted)"></div><div><div class="sn">Enneagram</div><div class="sv">Type · Wing · Tritype</div></div><span class="sbadge lk">Initiate</span></div>
+      <div class="si off"><div class="sdot" style="background:var(--muted)"></div><div><div class="sn">Myers-Briggs</div><div class="sv">Type · Cognitive Functions</div></div><span class="sbadge lk">Initiate</span></div>
+      <div class="si off"><div class="sdot" style="background:var(--muted)"></div><div><div class="sn">Numerology</div><div class="sv">Life Path · Expression</div></div><span class="sbadge lk">Initiate</span></div>
+      <div class="si off"><div class="sdot" style="background:var(--muted)"></div><div><div class="sn">Internal Family Systems</div><div class="sv">Parts · Self Energy</div></div><span class="sbadge lk">Initiate</span></div>
+      <div class="si off"><div class="sdot" style="background:var(--muted)"></div><div><div class="sn">Archetype</div><div class="sv">Jungian · Universal Patterns</div></div><span class="sbadge lk">Initiate</span></div>
+      <button id="add-more-btn" style="width:100%;margin-top:10px;padding:8px;background:rgba(78,205,196,.07);border:1px dashed rgba(78,205,196,.4);color:rgba(78,205,196,.8);font-family:'Syne',sans-serif;font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;border-radius:3px;transition:background .2s,border-color .2s,box-shadow .2s;">+ Add a System</button>
+    </div>
+    <!-- Bottom utility buttons -->
+    <div style="margin-top:auto;padding:14px 16px 16px;border-top:1px solid var(--gb);display:flex;gap:8px;">
+      <button id="settings-btn" style="flex:1;padding:8px 0;background:rgba(201,169,110,.07);border:1px solid rgba(201,169,110,.18);color:var(--gold);font-family:'Syne',sans-serif;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;border-radius:3px;transition:background .2s;">Settings</button>
+      <button id="support-btn" style="flex:1;padding:8px 0;background:rgba(201,169,110,.07);border:1px solid rgba(201,169,110,.18);color:var(--gold);font-family:'Syne',sans-serif;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;border-radius:3px;transition:background .2s;">Support</button>
+    </div>
+  </aside>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" style="position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;">
+    <div id="settings-backdrop" style="position:absolute;inset:0;background:rgba(4,5,10,.5);backdrop-filter:blur(4px);"></div>
+    <div id="settings-card" style="position:relative;z-index:1;width:min(460px,85%);background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.1);border-radius:12px;backdrop-filter:blur(32px);box-shadow:0 0 80px rgba(0,0,0,.7);padding:0;overflow:hidden;transform:scale(.94) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);">
+      <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.7),transparent);"></div>
+      <div style="padding:28px 28px 24px;">
+        <button id="settings-close" style="position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(232,228,220,.4);font-size:1rem;">✕</button>
+        <div style="font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Settings</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--text);margin-bottom:24px;">Preferences</div>
+
+        <!-- Setting rows -->
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Sphere Rotation Speed</div>
+            <div class="setting-sub">How fast your systems orbit</div>
+          </div>
+          <input type="range" id="setting-speed" min="0" max="100" value="40" style="width:110px;accent-color:var(--gold);">
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Node Labels</div>
+            <div class="setting-sub">Show system names on the sphere</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="setting-labels" checked><span class="toggle-knob"></span></label>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Torus Animation</div>
+            <div class="setting-sub">Energy field circulation</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="setting-torus" checked><span class="toggle-knob"></span></label>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Star Field</div>
+            <div class="setting-sub">Background stars</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="setting-stars" checked><span class="toggle-knob"></span></label>
+        </div>
+        <div class="setting-row" style="border-bottom:none;">
+          <div>
+            <div class="setting-label">Custom Cursor</div>
+            <div class="setting-sub">Gold dot cursor effect</div>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" id="setting-cursor" checked><span class="toggle-knob"></span></label>
+        </div>
+
+        <div style="height:1px;background:rgba(255,255,255,.07);margin:20px 0 16px;"></div>
+        <div style="font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Account</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.9rem;color:rgba(232,228,220,.6);line-height:1.7;">
+          <span style="color:var(--gold);">Member Status:</span> <span style="color:var(--teal);">Explorer</span> &nbsp;·&nbsp;
+          <span style="color:var(--muted);">Joined March 2026</span>
+        </div>
+
+        <div style="height:1px;background:rgba(255,255,255,.07);margin:18px 0 14px;"></div>
+        <div style="font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Billing</div>
+
+        <div style="background:rgba(201,169,110,.05);border:1px solid rgba(201,169,110,.14);border-radius:6px;padding:12px 14px;margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-family:'Syne',sans-serif;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);">Current Plan</span>
+            <span style="font-family:'Cormorant Garamond',serif;font-size:.82rem;color:rgba(232,228,220,.5);">Free</span>
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:.76rem;color:rgba(232,228,220,.42);line-height:1.6;">Basic sphere access · 1 knowledge system</div>
+        </div>
+
+        <button onclick="closeSettings()" style="width:100%;padding:9px;background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.3);color:#4ecdc4;font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;border-radius:3px;transition:background .2s;margin-bottom:6px;" onmouseover="this.style.background='rgba(78,205,196,.18)'" onmouseout="this.style.background='rgba(78,205,196,.08)'">Upgrade to Initiate &rarr;</button>
+
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button style="flex:1;padding:7px;background:transparent;border:1px solid rgba(255,255,255,.08);color:rgba(232,228,220,.38);font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='rgba(232,228,220,.7)';this.style.borderColor='rgba(255,255,255,.18)'" onmouseout="this.style.color='rgba(232,228,220,.38)';this.style.borderColor='rgba(255,255,255,.08)'">Manage Subscription</button>
+          <button style="flex:1;padding:7px;background:transparent;border:1px solid rgba(255,255,255,.08);color:rgba(232,228,220,.38);font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='rgba(232,228,220,.7)';this.style.borderColor='rgba(255,255,255,.18)'" onmouseout="this.style.color='rgba(232,228,220,.38)';this.style.borderColor='rgba(255,255,255,.08)'">Billing History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="sphere-area" id="sphere-area">
+    <div class="s-title">
+      <div class="s-name" id="sphere-name"></div>
+      <div class="s-date" id="sphere-date"></div>
+    </div>
+    <canvas id="sphere-canvas" width="560" height="560"></canvas>
+    <div class="s-hint">hover to explore · click to enter</div>
+
+    <!-- GLASSMORPHISM MODAL -->
+    <div class="modal-overlay" id="modal">
+      <div class="modal-backdrop" id="modal-backdrop"></div>
+      <div class="modal-card" id="modal-card">
+        <div class="modal-accent" id="modal-accent"></div>
+        <div class="modal-body">
+          <button class="modal-close" id="modal-close">✕</button>
+          <div class="modal-sys-label" id="modal-sys-label"></div>
+          <div class="modal-title" id="modal-title"></div>
+          <div class="modal-origin" id="modal-origin"></div>
+          <div class="modal-divider"></div>
+          <div class="modal-section-label">What It Is</div>
+          <div class="modal-text" id="modal-what"></div>
+          <div class="modal-divider"></div>
+          <div class="modal-section-label">What Your Pattern Means</div>
+          <div class="modal-text" id="modal-for"></div>
+          <div class="modal-divider"></div>
+          <button id="modal-enter-sphere" style="width:100%;margin-bottom:14px;padding:12px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.35);color:#4ecdc4;font-family:'Syne',sans-serif;font-size:.54rem;letter-spacing:.22em;text-transform:uppercase;border-radius:3px;transition:background .2s;">Dive Deeper</button>
+          <div class="modal-section-label">Outside the Sphere</div>
+          <div class="modal-links" id="modal-links"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="chat-panel">
+    <!-- PATHWAY — top half -->
+    <div class="pathway-section">
+      <div class="ch" style="border-bottom:1px solid var(--gb);"><div class="cht">The Pathway</div><div class="chs">Your journey through the sphere</div></div>
+      <div style="display:flex;flex-shrink:0;overflow:hidden;">
+        <div style="padding:10px 14px;flex-shrink:0;width:148px;border-right:1px solid var(--gb);" id="journey-legend"></div>
+        <div style="padding:12px 14px;overflow-y:auto;flex:1;" id="shell-desc">
+          <div id="shell-desc-text" style="font-family:'Cormorant Garamond',serif;font-size:.76rem;line-height:1.85;color:rgba(232,228,220,.68);"></div>
+        </div>
+      </div>
+    </div>
+    <!-- COMPANION — bottom half -->
+    <div class="companion-section">
+      <div class="ch" style="padding:10px 14px 8px;display:flex;align-items:center;">
+        <div><div class="cht">Your Companion AI</div><div class="chs">Ask anything about your map</div></div>
+        <button id="hist-btn" title="Chat History" style="margin-left:auto;background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.22);color:#4ecdc4;font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;padding:5px 9px;border-radius:3px;flex-shrink:0;">History</button>
+      </div>
+      <div class="chat-sugg" id="chat-sugg">
+        <button class="sqbtn" data-q="Looking at my sphere for the first time — what do these five systems have in common when it comes to my specific chart?">What do my five systems share?</button>
+        <button class="sqbtn" data-q="Which of my five knowledge systems would you recommend I go deepest into first, and why?">Where should I start going deeper?</button>
+        <button class="sqbtn" data-q="What is the single most important thing each of my five systems is trying to tell me?">One key message from each system</button>
+      </div>
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="cia">
+        <div class="ciw">
+          <textarea class="ci" id="chat-in" rows="1" placeholder="Ask your sphere anything…"></textarea>
+          <button class="csend" id="send-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- CHAT HISTORY MODAL -->
+<div id="hist-modal" style="position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;">
+  <div id="hist-backdrop" style="position:absolute;inset:0;background:rgba(4,5,10,.72);backdrop-filter:blur(8px);"></div>
+  <div style="position:relative;z-index:1;width:520px;max-height:76vh;background:rgba(12,14,22,.95);border:1px solid rgba(201,169,110,.18);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;transform:scale(.95) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);" id="hist-card">
+    <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(78,205,196,.7),transparent);"></div>
+    <div style="padding:20px 24px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;">
+      <div>
+        <div style="font-size:.52rem;letter-spacing:.26em;text-transform:uppercase;color:#4ecdc4;margin-bottom:3px;">Chat History</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;color:var(--text);">Your Sessions</div>
+      </div>
+      <button id="hist-close" style="margin-left:auto;background:none;border:none;color:rgba(232,228,220,.4);font-size:1rem;">✕</button>
+    </div>
+    <div id="hist-list" style="overflow-y:auto;padding:14px 24px;flex:1;display:flex;flex-direction:column;gap:10px;"></div>
+    <div style="padding:12px 24px;border-top:1px solid rgba(255,255,255,.07);display:flex;gap:10px;">
+      <button id="hist-save" style="background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.22);color:#4ecdc4;font-family:'Syne',sans-serif;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;border-radius:3px;">Save Current Session</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- HOW-TO POPUP (shown after onboarding, first time only) -->
+<div id="onboard-modal" style="position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;">
+  <div style="position:absolute;inset:0;background:rgba(4,5,10,.78);backdrop-filter:blur(10px);"></div>
+  <div style="position:relative;z-index:1;width:480px;max-height:80vh;overflow-y:auto;background:rgba(12,14,22,.96);border:1px solid rgba(201,169,110,.2);border-radius:6px;transform:scale(.94) translateY(12px);transition:transform .4s cubic-bezier(.16,1,.3,1);" id="onboard-card">
+    <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.7),transparent);"></div>
+    <div style="padding:28px 30px 24px;">
+      <div style="font-size:.5rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Welcome to Temenos</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;color:var(--text);margin-bottom:6px;">How to Navigate Your Sphere</div>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin:14px 0;"></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:.85rem;line-height:1.85;color:rgba(232,228,220,.78);display:flex;flex-direction:column;gap:12px;">
+        <div><span style="color:#4ecdc4;font-size:.46rem;letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:3px;">Hover / Long Press</span>Hold your cursor over any glowing node to reveal the knowledge system's teachings and your personal pattern within it.</div>
+        <div><span style="color:#4ecdc4;font-size:.46rem;letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:3px;">Click / Tap</span>Click a node to enter the next layer of the sphere, moving deeper into that system's foundations.</div>
+        <div><span style="color:#4ecdc4;font-size:.46rem;letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:3px;">Drag</span>Rotate the sphere freely by dragging. The sphere has momentum — release with velocity to keep it spinning.</div>
+        <div><span style="color:#4ecdc4;font-size:.46rem;letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:3px;">The Pathway</span>The panel on the right tracks your journey inward through 9 shells of self-knowledge.</div>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,.07);margin:18px 0 14px;"></div>
+      <button id="onboard-close" style="width:100%;padding:11px;background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.22);color:var(--gold);font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;border-radius:3px;">Begin Exploring</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ━━ HARDCODED PROFILE (no auth) ━━
+(function(){
+  var profile = {
+    name: 'Explorer',
+    email: '',
+    birthdate: '1990-09-05',
+    birth_location: 'New York, USA',
+    birth_time: '14:30',
+    plan: 'explorer'
+  };
+
+  function capitalise(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+  function formatBirthdate(d){
+    if(!d) return '';
+    var parts = d.split('-');
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return months[parseInt(parts[1])-1] + ' ' + parseInt(parts[2]) + ', ' + parts[0];
+  }
+  function formatTime(t){
+    if(!t) return '';
+    var p = t.split(':');
+    var h = parseInt(p[0]), m = p[1];
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + m + ' ' + ampm;
+  }
+
+  var tn = document.getElementById('topbar-name');
+  var tp = document.getElementById('topbar-plan');
+  var sn = document.getElementById('sphere-name');
+  var sd = document.getElementById('sphere-date');
+  if(tn) tn.textContent = profile.name.split(' ')[0];
+  if(tp) tp.textContent = capitalise(profile.plan);
+  if(sn) sn.textContent = profile.name;
+  if(sd){
+    var dStr = formatBirthdate(profile.birthdate);
+    var tStr = profile.birth_time ? ' \u00b7 ' + formatTime(profile.birth_time) : '';
+    sd.textContent = dStr + tStr + ' \u00b7 ' + profile.birth_location;
+  }
+  window._userProfile = profile;
+})();
+
+// ━━ CURSOR ━━
+(function(){
+  var dot=document.getElementById('cdot'),ring=document.getElementById('cring');
+  var mx=-300,my=-300,rx=-300,ry=-300,alive=false;
+  var s=document.createElement('style');s.textContent='html,body,*{cursor:none!important;}';document.head.appendChild(s);
+  document.addEventListener('mouseover',function(e){if(e.target&&e.target.style)e.target.style.setProperty('cursor','none','important');},true);
+  document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;if(!alive){dot.style.opacity='1';ring.style.opacity='1';alive=true;}},{passive:true});
+  document.addEventListener('mousedown',function(){document.documentElement.style.setProperty('cursor','none','important');document.body.style.setProperty('cursor','none','important');});
+  (function loop(){dot.style.transform='translate('+mx+'px,'+my+'px) translate(-50%,-50%)';rx+=(mx-rx)*0.13;ry+=(my-ry)*0.13;ring.style.transform='translate('+rx+'px,'+ry+'px) translate(-50%,-50%)';requestAnimationFrame(loop);})();
+})();
+
+// ━━ STARS ━━
+(function(){
+  var c=document.getElementById('stars');c.width=window.innerWidth;c.height=window.innerHeight;
+  var x=c.getContext('2d');
+  for(var i=0;i<200;i++){x.beginPath();x.arc(Math.random()*c.width,Math.random()*c.height,Math.random()*.85+.1,0,Math.PI*2);x.fillStyle='rgba(232,228,220,'+(Math.random()*.32+.05)+')';x.fill();}
+})();
+
+// ━━ JOURNEY LEGEND ━━
+var JOURNEY = [
+  {n:9,name:'Discovery',   color:'rgba(140,220,210,',
+   desc:'<p style="margin:0 0 8px 0;">Explore knowledge systems, their basic teachings, and your pattern within them.</p><p style="margin:0;">Dive deeper by entering the sphere, where you\'ll encounter the foundational teachings of each system and your pattern.</p>'},
+  {n:8,name:'Foundations', color:'rgba(65,200,194,',
+   desc:'Study the structural logic of each system you\'ve chosen — its historical roots, internal mechanics, and the specific outputs generated from your birth data. Build a working model before applying it.'},
+  {n:7,name:'Application', color:'rgba(80,170,192,',
+   desc:'Test the frameworks against your lived patterns — behavior, relationships, recurring themes. Notice where the maps make accurate predictions and where they break down. Precision matters here.'},
+  {n:6,name:'Community',   color:'rgba(110,130,205,',
+   desc:'Bring your findings into dialogue with others working in the same systems — teachers, practitioners, peers. Isolated interpretation has limits that shared inquiry dissolves. Compare and refine.'},
+  {n:5,name:'Immersion',   color:'rgba(155,114,207,',
+   desc:'Commit to one or more systems as a sustained practice. Stop consulting the chart and begin moving from it. The frameworks become operational tools rather than objects of study.'},
+  {n:4,name:'Mentorship',  color:'rgba(185,105,165,',
+   desc:'Your embodied understanding now has transmission value. Work with others in these systems — teach, guide, hold space. Explaining what you know accelerates and deepens your own integration.'},
+  {n:3,name:'Apprenticeship',color:'rgba(210,120,120,',
+   desc:'Refine your practice under direct guidance from someone with greater depth. Structured feedback reveals the gap between your self-model and your actual functioning. Close that gap deliberately.'},
+  {n:2,name:'Experimentation',color:'rgba(220,155,95,',
+   desc:'Use the systems as instruments of open inquiry rather than confirmation. Design experiments. Hold outcomes loosely. Let the patterns surprise you rather than validate what you already believe.'},
+  {n:1,name:'Creation',    color:'rgba(201,169,110,',
+   desc:'Synthesize your depth into an original contribution — a practice, a teaching, a body of work. What you have integrated now wants form. The map becomes something you offer, not just navigate.'},
+];
+var curShell = 9;
+var legendEl=document.getElementById('journey-legend');
+JOURNEY.forEach(function(j){
+  var row=document.createElement('div');
+  row.id='pathway-row-'+j.n;
+  row.style.cssText='display:flex;align-items:center;gap:9px;padding:4px 4px;border-radius:3px;transition:all .4s;';
+  row.innerHTML='<div class="pw-dot" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:'+j.color+'0.5);transition:all .4s;"></div>'
+    +'<div class="pw-label" style="font-size:.58rem;font-weight:300;color:rgba(232,228,220,.35);letter-spacing:.06em;transition:all .4s;">'+j.name+(j.n<=6?'<span style="margin-left:5px;font-size:.4rem;opacity:.4;vertical-align:middle;">🔒</span>':'')+'</div>';
+  legendEl.appendChild(row);
+});
+function updatePathwayHighlight(n){
+  var descEl=document.getElementById('shell-desc-text');
+  JOURNEY.forEach(function(j){
+    var row=document.getElementById('pathway-row-'+j.n);
+    if(!row) return;
+    var dot=row.querySelector('.pw-dot');
+    var lbl=row.querySelector('.pw-label');
+    if(j.n===n){
+      lbl.style.cssText='font-size:.88rem;font-weight:500;color:rgba(232,228,220,.98);letter-spacing:.04em;transition:all .4s;font-family:"Syne",sans-serif;';
+      dot.style.cssText='width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+j.color+'0.95);box-shadow:0 0 10px '+j.color+'0.5);transition:all .4s;';
+      if(descEl){
+        descEl.innerHTML=j.desc||'';
+        descEl.style.transition='opacity .4s';
+        descEl.style.opacity='0';
+        setTimeout(function(){descEl.style.opacity='1';},40);
+      }
+    } else {
+      var unavail = j.n <= 6;
+      lbl.style.cssText='font-size:.58rem;font-weight:300;color:rgba(232,228,220,'+(unavail?'.18':'.35')+');letter-spacing:.06em;transition:all .4s;'+(unavail?'text-decoration:none;':'');
+      dot.style.cssText='width:6px;height:6px;border-radius:50%;flex-shrink:0;background:'+j.color+(unavail?'0.15)':'0.35)')+';transition:all .4s;';
+    }
+  });
+}
+updatePathwayHighlight(curShell);
+
+// ━━ SYSTEM DATA ━━
+var SYSTEMS = [
+  {
+    id:'vedic',
+    name:'Vedic Astrology',
+    color:'#dc9b5f',  // warm amber — Vedic (phi:0.72, theta:2.85)
+    phi: 0.72, theta: 2.85,
+    origin:'India · 1500–2000 BCE · Jyotish tradition',
+    what:'Vedic astrology — <b>Jyotish</b>, meaning "science of light" — is one of the oldest continuous knowledge systems on Earth. Unlike Western astrology, it uses the <b>sidereal zodiac</b>, aligned to the actual star positions, and places particular emphasis on the <b>Moon, rising sign, and lunar mansions (nakshatras)</b>. It maps the soul\'s karmic terrain through the positions of planets at the moment of birth, understood as a precise symbolic language between cosmic cycles and individual consciousness.',
+    forYou:'For you specifically, it reveals <b>Sagittarius rising</b> with Moon in Purva Ashadha conjunct the Ascendant — your emotional nature and your outer face are one. The <b>Leo Sun in the 9th house</b> describes a soul whose dharma is radiant transmission of truth. Vedic astrology doesn\'t predict your fate — it maps the energetic weather of your journey and the timing of natural openings.',
+    links:[
+      {label:'Astro.com — Free Vedic Chart Calculator', url:'https://astro.com', note:'Most accurate free calculator'},
+      {label:'Light on Life — Hart de Fouw', url:'https://www.amazon.com/Light-Life-Introduction-Astrology-Jyotish/dp/0140195076', note:'Foundational text'},
+      {label:'Kalachakra.org — Nakshatra Library', url:'https://www.kalachakra.org', note:'Deep nakshatra study'},
+    ]
+  },
+  {
+    id:'hd',
+    name:'Human Design',
+    color:'#8b82cd',  // periwinkle — Human Design (phi:1.45, theta:0.55)
+    phi: 1.25, theta: 0.55,  // was 1.45 — moved away from equator
+    origin:'Ibiza, Spain · 1987 · Ra Uru Hu (Robert Allan Krakower)',
+    what:'Human Design is a synthesis of four ancient traditions — the <b>I Ching, Kabbalah, Chakra system, and Astrology</b> — combined with quantum physics and genetics. It emerged from an eight-day mystical experience in 1987 and maps the body\'s energetic mechanics through a <b>BodyGraph</b>: nine energy centers, 36 channels, and 64 gates derived from the I Ching. It describes not just personality but <b>how your energy moves</b> — how you are designed to make decisions, interact with others, and fulfill your life\'s purpose.',
+    forYou:'Your chart reveals a <b>Manifesting Generator with Emotional Authority</b> — you are a multi-passionate being with significant creative and initiating power, but your clearest decisions come after waiting through the full arc of your emotional wave. Your <b>1/1 Profile</b> means you need deep foundational knowledge before you can move with confidence. Human Design gives you permission to stop trying to be who you\'re not.',
+    links:[
+      {label:'Jovian Archive — Official HD Resource', url:'https://www.jovianarchive.com', note:'Ra Uru Hu\'s original teachings'},
+      {label:'Mybodygraph.com — Free Chart', url:'https://www.mybodygraph.com', note:'Clean free chart calculator'},
+      {label:'The Definitive Book of Human Design — Lynda Bunnell', url:'https://www.amazon.com/Definitive-Book-Human-Design/dp/0615201636', note:'Best introductory text'},
+    ]
+  },
+  {
+    id:'gk',
+    name:'Gene Keys',
+    color:'#d27870',  // dusty coral — Gene Keys (phi:1.75, theta:3.30)
+    phi: 1.95, theta: 3.30,  // was 1.75 — moved away from equator
+    origin:'UK · 2002–2009 · Richard Rudd',
+    what:'Gene Keys is a contemplative transmission system developed by Richard Rudd, derived from the 64 hexagrams of the I Ching and synthesized with Human Design, astrology, and evolutionary biology. Rather than a fixed personality map, it describes a <b>spectrum of consciousness</b> within each of 64 archetypes — from Shadow (unconscious, reactive) through Gift (conscious, flowing) to Siddhi (transcendent, universal). It is less a system to understand intellectually and more a <b>contemplative journey</b> to be lived slowly over time.',
+    forYou:'Your <b>Activation Sequence</b> begins with Gate 39 as your Life\'s Work — Provocation transforming into Dynamism and ultimately Liberation. This is not who you will become but the quality of consciousness <b>already present in you</b>, waiting to be uncovered. Gene Keys works best read slowly, one key at a time, letting the language settle into the body rather than the mind.',
+    links:[
+      {label:'Genekeys.com — Official Site', url:'https://genekeys.com', note:'Richard Rudd\'s home base'},
+      {label:'The Gene Keys Book — Richard Rudd', url:'https://www.amazon.com/Gene-Keys-Unlocking-Higher-Purpose/dp/1780285426', note:'The core text — read slowly'},
+      {label:'Golden Path Program', url:'https://genekeys.com/golden-path/', note:'Guided contemplative journey'},
+    ]
+  },
+  {
+    id:'enn',
+    name:'Enneagram',
+    color:'#8cd8d2',  // soft teal-aqua — Enneagram (phi:2.25, theta:1.57)
+    phi: 2.25, theta: 1.57,
+    origin:'Multiple lineages · Formalized 1960s–70s · Gurdjieff, Ichazo, Naranjo',
+    what:'The Enneagram is a map of nine fundamental ego structures — not personality types in a superficial sense, but <b>nine distinct ways that consciousness contracts around a core wound</b>, generating characteristic patterns of thought, emotion, and behavior. It has roots in Sufi mysticism, the Kabbalah, and early Christian contemplative traditions, and was formalized as a psychological and spiritual system through the work of Oscar Ichazo and Claudio Naranjo. It describes not just who you are but <b>the mechanics of how you suffer and how you awaken</b>.',
+    forYou:'As a <b>Type 4</b>, your core structure is oriented around the belief that something essential is missing — a fundamental incompleteness that others don\'t seem to feel. The gift, when this wound is metabolized, is an unparalleled capacity for <b>depth, beauty, and the transformation of suffering into meaning</b>. The Enneagram doesn\'t ask you to change your type — it asks you to see through it to the freedom already present beneath.',
+    links:[
+      {label:'The Enneagram Institute', url:'https://www.enneagraminstitute.com', note:'Most comprehensive resource'},
+      {label:'The Wisdom of the Enneagram — Riso & Hudson', url:'https://www.amazon.com/Wisdom-Enneagram-Complete-Psychological-Spiritual/dp/0553378201', note:'Definitive modern text'},
+      {label:'Beatrice Chestnut — Type 4 Deep Dive', url:'https://www.beatricechestnut.com', note:'Subtype specialist'},
+    ]
+  },
+  {
+    id:'mbti',
+    name:'Myers-Briggs',
+    color:'#b96ea5',  // muted mauve — Myers-Briggs (phi:0.38, theta:1.57)
+    phi: 0.38, theta: 1.57,
+    origin:'USA · 1943 · Isabel Briggs Myers & Katharine Cook Briggs, from C.G. Jung\'s typology',
+    what:'The Myers-Briggs Type Indicator (MBTI) is a <b>psychological framework derived from Carl Jung\'s theory of cognitive functions</b>. It describes personality through four dimensions: how we direct energy (Introversion/Extraversion), how we take in information (Intuition/Sensing), how we make decisions (Feeling/Thinking), and how we orient to the outer world (Judging/Perceiving). Beneath the four letters lies a rich system of <b>eight cognitive functions</b> — ways the mind processes and engages with reality — that reveal far more than the surface type.',
+    forYou:'As an <b>INFJ</b>, your dominant function is Introverted Intuition — the capacity to perceive the deep patterns and future trajectories beneath the surface of events. This is paired with Extraverted Feeling, which gives you a natural attunement to others\' needs and values. INFJs are among the rarest types — and often feel it. The system\'s gift for you is understanding why you experience the world so differently, and learning to trust that difference as <b>precision rather than pathology</b>.',
+    links:[
+      {label:'Personality Junkie — Cognitive Functions', url:'https://personalityjunkie.com', note:'Best depth resource for INFJ'},
+      {label:'Carl Jung — Psychological Types', url:'https://www.amazon.com/Psychological-Types-Collected-Works-Vol/dp/0691097704', note:'The original source'},
+      {label:'16Personalities.com — Free Assessment', url:'https://www.16personalities.com', note:'Best free typing resource'},
+    ]
+  },
+  {
+    id:'chinese',
+    name:'Chinese Astrology',
+    color:'#6ea8c0',  // slate-blue — Chinese Astrology (phi:1.05, theta:5.20)
+    phi: 1.05, theta: 5.20,
+    origin:'China · 2nd century BCE · Han Dynasty court astronomers',
+    what:'Chinese Astrology is a <b>60-year cyclical system</b> combining 12 animal archetypes with 5 elemental forces (Wood, Fire, Earth, Metal, Water) to describe personality, destiny, and timing. Unlike Western systems, it operates on <b>year, month, day, and hour pillars</b> — the Four Pillars of Destiny (BaZi) — each contributing a different layer of character and fate. It is one of the most precise and ancient systems for mapping both personality and <b>life timing cycles</b>.',
+    forYou:'Born in <b>1990, the Year of the Metal Horse</b>, you carry Horse\'s restless forward momentum and independence, tempered by Metal\'s capacity for precision and structural thinking. The Horse in Chinese tradition is the great adventurer — never still, always seeking the horizon. Metal refines this into a drive that is not just fast but <b>sharp, purposeful, and capable of lasting form</b>.',
+    links:[
+      {label:'The Astrology of I Ching — W. Sherrill & W. Chu', url:'https://www.amazon.com/Astrology-Ching-W-Sherrill/dp/0140190902', note:'Classical foundation text'},
+      {label:'BaziCalculator.net — Four Pillars Chart', url:'https://www.bazicalculator.net', note:'Free BaZi chart generator'},
+      {label:'Joey Yap — BaZi Mastery', url:'https://www.joeyyap.com', note:'Leading modern BaZi authority'},
+    ]
+  },
+  {
+    id:'western',
+    name:'Western Astrology',
+    color:'#c9a96e',  // soft gold — Western Astrology (phi:0.88, theta:4.45)
+    phi: 0.88, theta: 4.45,
+    origin:'Babylon · ~400 BCE · Hellenistic synthesis, formalized by Ptolemy c.150 CE',
+    what:'Western Astrology uses the <b>tropical zodiac</b> — aligned to the seasons rather than fixed stars — and is the dominant astrological tradition in Europe and the Americas. It maps the position of planets at birth against twelve archetypal signs and twelve houses, describing <b>personality, psychology, relationships, and life themes</b>. Modern Western astrology, particularly in the Jungian tradition, is less about prediction and more about <b>understanding the inner landscape</b> and the timing of psychological cycles.',
+    forYou:'Your Western chart shows <b>Virgo Sun, Capricorn Rising</b> — a different signature than the Vedic, because Western uses the tropical zodiac shifted ~24° from the sidereal. This gives you a secondary lens: where Vedic shows the soul\'s karmic terrain, Western illuminates <b>psychological patterns and relational dynamics</b>. Having both charts is like having a portrait painted by two different masters — the same person, differently revealed.',
+    links:[
+      {label:'Astro.com — Free Western Chart', url:'https://astro.com', note:'Industry standard calculator'},
+      {label:'Planets in Transit — Robert Hand', url:'https://www.amazon.com/Planets-Transit-Robert-Hand/dp/0914918238', note:'Essential timing reference'},
+      {label:'The Inner Sky — Steven Forrest', url:'https://www.amazon.com/Inner-Sky-Steven-Forrest/dp/0979067715', note:'Best modern psychological approach'},
+    ]
+  },
+];
+
+// ━━ SPHERE ENGINE ━━
+var canvas=document.getElementById('sphere-canvas');
+var ctx=canvas.getContext('2d');
+var W=560,H=560,CX=280,CY=280,R=218;
+
+var rotY=0, velY=0.002; // slow stable auto-rotation
+var dragging=false, lastMX=0;
+var hoveredIdx=-1;        // which node cursor is over
+var glowIdx=-1;           // which node is lit up (hover or snap-selected)
+var hoverProgress=0;      // 0→1 animation for hover state
+var hoverTimer=null;      // delay before modal hint shows
+var rotPaused=false;
+
+// Build node objects — evenly spaced theta, staggered phi, random start offset each load
+var nodeStartOffset = Math.random() * Math.PI * 2;
+var phiPattern = [0.72, 1.25, 1.95, 0.55, 2.20, 0.88, 1.60]; // varied heights, avoid equator (π/2≈1.57) and center
+var nodes=SYSTEMS.map(function(s,i){
+  var theta = nodeStartOffset + i * (Math.PI*2/SYSTEMS.length);
+  var phi = phiPattern[i % phiPattern.length];
+  return {
+    idx:i, sys:s,
+    phi:phi, theta:theta,
+    color:s.color,
+    scale:1,
+    linePct:0,
+    pulse: i * (Math.PI*2/SYSTEMS.length),
+    glow:0
+  };
+});
+
+// Projection
+function project(phi,theta,r){
+  var x=Math.sin(phi)*Math.cos(theta)*r;
+  var y=Math.cos(phi)*r;
+  var z=Math.sin(phi)*Math.sin(theta)*r;
+  var cosY=Math.cos(rotY),sinY=Math.sin(rotY);
+  var x1=x*cosY+z*sinY, z1=-x*sinY+z*cosY;
+  var tilt=0.18;
+  var cosX=Math.cos(tilt),sinX=Math.sin(tilt);
+  var y2=y*cosX-z1*sinX, z2=y*sinX+z1*cosX;
+  return{x:CX+x1,y:CY-y2,z:z2};
+}
+function hexRGB(hex){return parseInt(hex.slice(1,3),16)+','+parseInt(hex.slice(3,5),16)+','+parseInt(hex.slice(5,7),16);}
+
+// Interaction
+canvas.addEventListener('mousedown',function(e){e.preventDefault();dragging=true;lastMX=e.clientX;velY=0;});
+window.addEventListener('mousemove',function(e){
+  if(dragging){var dx=e.clientX-lastMX;velY=dx*0.007;rotY+=velY;lastMX=e.clientX;}
+},{passive:true});
+window.addEventListener('mouseup',function(){dragging=false;});
+
+// Hover detection on canvas — hover highlights, click opens modal
+var tipCache=[];
+var hoverOpenTimer=null;
+canvas.addEventListener('mousemove',function(e){
+  var rect=canvas.getBoundingClientRect();
+  var mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  var found=-1;
+  for(var i=0;i<tipCache.length;i++){
+    var tp=tipCache[i];if(!tp)continue;
+    if(tp.z < -R*0.2) continue;
+    var dx=mx-tp.x,dy=my-tp.y;
+    if(Math.sqrt(dx*dx+dy*dy)<18){found=i;break;}
+  }
+  if(found!==hoveredIdx){
+    hoveredIdx=found;
+    glowIdx=found;
+    if(!snapHeld) rotPaused=(found>=0);
+    clearTimeout(hoverOpenTimer);
+  }
+});
+canvas.addEventListener('mouseleave',function(){
+  if(!snapHeld){ hoveredIdx=-1; glowIdx=-1; rotPaused=false; }
+  clearTimeout(hoverOpenTimer);
+});
+
+// Click → open modal for hovered node (or find nearest)
+canvas.addEventListener('click',function(e){
+  var rect=canvas.getBoundingClientRect();
+  var mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  for(var i=0;i<tipCache.length;i++){
+    var tp=tipCache[i];if(!tp)continue;
+    if(tp.z< -R*0.2)continue;
+    var dx=mx-tp.x,dy=my-tp.y;
+    if(Math.sqrt(dx*dx+dy*dy)<22){
+      openModal(nodes[i].sys);
+      hideSnapDismiss();
+      break;
+    }
+  }
+});
+
+// Modal
+var modalEl=document.getElementById('modal');
+var modalBackdrop=document.getElementById('modal-backdrop');
+var modalClose=document.getElementById('modal-close');
+modalClose.addEventListener('click',closeModal);
+modalBackdrop.addEventListener('click',closeModal);
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+
+function openModal(sys){
+  var rgb=hexRGB(sys.color);
+  document.getElementById('modal-accent').style.background=
+    'linear-gradient(90deg,transparent,rgba('+rgb+',.8),transparent)';
+  document.getElementById('modal-sys-label').textContent=sys.name+' · Overview';
+  document.getElementById('modal-sys-label').style.color=sys.color;
+  document.getElementById('modal-title').textContent=sys.name;
+  document.getElementById('modal-origin').textContent=sys.origin;
+  document.getElementById('modal-what').innerHTML=sys.what;
+  document.getElementById('modal-for').innerHTML=sys.forYou;
+  // Dive Deeper button — color matches node
+  var diveBtn = document.getElementById('modal-enter-sphere');
+  diveBtn.style.background = 'rgba('+rgb+',.1)';
+  diveBtn.style.borderColor = 'rgba('+rgb+',.35)';
+  diveBtn.style.color = sys.color;
+  var linksEl=document.getElementById('modal-links');
+  linksEl.innerHTML='';
+  sys.links.forEach(function(lk){
+    var a=document.createElement('a');
+    a.className='modal-link';a.href=lk.url;a.target='_blank';a.rel='noopener';
+    a.innerHTML='<div class="modal-link-dot" style="background:'+sys.color+'"></div>'
+      +'<span>'+lk.label+'<span style="display:block;font-size:.48rem;color:var(--muted);margin-top:2px;">'+lk.note+'</span></span>';
+    linksEl.appendChild(a);
+  });
+  modalEl.classList.add('open');
+}
+function closeModal(){
+  modalEl.classList.remove('open');
+  rotPaused=false; velY=0.002;
+  glowIdx=-1; hoveredIdx=-1;
+  hideSnapDismiss();
+}
+
+// ── SNAP-HOLD DISMISS BUTTON ──
+var snapHeld = false;
+var snapDismissEl = (function(){
+  var btn = document.createElement('button');
+  btn.id = 'snap-dismiss';
+  btn.innerHTML = '✕';
+  btn.style.cssText = 'display:none;position:absolute;top:12px;right:12px;z-index:30;'
+    +'background:rgba(78,205,196,.15);border:1px solid rgba(78,205,196,.5);'
+    +'color:#4ecdc4;font-size:.65rem;width:28px;height:28px;border-radius:50%;'
+    +'line-height:1;padding:0;transition:opacity .3s;box-shadow:0 0 12px rgba(78,205,196,.25);';
+  btn.title = 'Release & resume';
+  btn.addEventListener('click', function(){
+    hideSnapDismiss();
+    rotPaused = false; velY = 0.002;
+    glowIdx = -1; hoveredIdx = -1;
+  });
+  document.getElementById('sphere-area').appendChild(btn);
+  return btn;
+})();
+function showSnapDismiss(){ snapHeld=true; snapDismissEl.style.display='block'; }
+function hideSnapDismiss(){ snapHeld=false; snapDismissEl.style.display='none'; }
+
+// ── ENTER SPHERE BUTTON ──
+document.getElementById('modal-enter-sphere').addEventListener('click',function(){
+  closeModal();
+  // TODO: transition to shell 8 — placeholder
+  console.log('Entering shell 8: Foundations');
+});
+document.getElementById('modal-enter-sphere').addEventListener('mouseenter',function(){
+  this.style.background='rgba(78,205,196,.18)';
+});
+document.getElementById('modal-enter-sphere').addEventListener('mouseleave',function(){
+  this.style.background='rgba(78,205,196,.1)';
+});
+
+// ── CHAT HISTORY ──
+var histModal=document.getElementById('hist-modal');
+var histCard=document.getElementById('hist-card');
+var sessions=JSON.parse(localStorage.getItem('temenos_sessions')||'[]');
+
+function openHistModal(){
+  renderSessions();
+  histModal.style.opacity='1';histModal.style.pointerEvents='auto';
+  histCard.style.transform='scale(1) translateY(0)';
+}
+function closeHistModal(){
+  histModal.style.opacity='0';histModal.style.pointerEvents='none';
+  histCard.style.transform='scale(.95) translateY(8px)';
+}
+function renderSessions(){
+  var list=document.getElementById('hist-list');
+  list.innerHTML='';
+  if(!sessions.length){
+    list.innerHTML='<div style="font-family:\'Cormorant Garamond\',serif;font-size:.8rem;color:rgba(232,228,220,.4);text-align:center;padding:20px 0;">No saved sessions yet.</div>';
+    return;
+  }
+  sessions.slice().reverse().forEach(function(s,ri){
+    var i=sessions.length-1-ri;
+    var card=document.createElement('div');
+    card.style.cssText='border:1px solid rgba(255,255,255,.07);border-radius:4px;padding:12px 14px;background:rgba(255,255,255,.02);cursor:pointer;';
+    card.innerHTML='<div style="font-size:.46rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">'+s.date+'</div>'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:.88rem;color:var(--text);margin-bottom:6px;">'+s.label+'</div>'
+      +'<div style="font-size:.6rem;color:rgba(232,228,220,.45);line-height:1.5;white-space:pre-wrap;">'+s.preview+'</div>'
+      +'<div style="margin-top:8px;display:flex;gap:8px;">'
+      +'<a href="data:text/plain;charset=utf-8,'+encodeURIComponent(s.full)+'" download="'+s.label.replace(/\s+/g,'-')+'.txt" style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:#4ecdc4;text-decoration:none;background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.2);padding:4px 8px;border-radius:2px;">Download</a>'
+      +'<button data-idx="'+i+'" class="del-sess" style="font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(232,228,220,.3);background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);padding:4px 8px;border-radius:2px;">Delete</button>'
+      +'</div>';
+    list.appendChild(card);
+  });
+  list.querySelectorAll('.del-sess').forEach(function(b){
+    b.addEventListener('click',function(e){
+      e.stopPropagation();
+      sessions.splice(parseInt(b.dataset.idx),1);
+      localStorage.setItem('temenos_sessions',JSON.stringify(sessions));
+      renderSessions();
+    });
+  });
+}
+function saveCurrentSession(){
+  if(!history.length) return;
+  var now=new Date();
+  var dateStr=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  // Label from first user message
+  var label=history[0].content.slice(0,48)+(history[0].content.length>48?'…':'');
+  // Full transcript
+  var full=history.map(function(m){return (m.role==='user'?'You':'Temenos')+': '+m.content;}).join('\n\n');
+  // Preview — first exchange
+  var preview=full.slice(0,160)+(full.length>160?'…':'');
+  sessions.push({date:dateStr,label:label,preview:preview,full:full});
+  localStorage.setItem('temenos_sessions',JSON.stringify(sessions));
+}
+document.getElementById('hist-btn').addEventListener('click',openHistModal);
+document.getElementById('hist-close').addEventListener('click',closeHistModal);
+document.getElementById('hist-backdrop').addEventListener('click',closeHistModal);
+document.getElementById('hist-save').addEventListener('click',function(){
+  saveCurrentSession();renderSessions();
+  this.textContent='Saved ✓';var btn=this;setTimeout(function(){btn.textContent='Save Current Session';},2000);
+});
+
+// ── ONBOARDING POPUP — 10s delay on first load ──
+var onboardModal=document.getElementById('onboard-modal');
+var onboardCard=document.getElementById('onboard-card');
+function closeOnboard(){
+  onboardModal.style.opacity='0';onboardModal.style.pointerEvents='none';
+  onboardCard.style.transform='scale(.94) translateY(12px)';
+  // Refresh SYS prompt now that profile is loaded
+  SYS = buildSYS();
+}
+document.getElementById('onboard-close').addEventListener('click',closeOnboard);
+onboardModal.addEventListener('click',function(e){if(e.target===onboardModal)closeOnboard();});
+
+// ── LEFT PANEL SYSTEM HOVER GLOW + CLICK SNAP ──
+document.querySelectorAll('.si.on[data-sys]').forEach(function(row){
+  // Hover: illuminate row in system color
+  row.addEventListener('mouseenter',function(){
+    var id=row.dataset.sys;
+    var sys=SYSTEMS.find(function(s){return s.id===id;});
+    if(sys){
+      var rgb=hexRGB(sys.color);
+      row.style.background='rgba('+rgb+',.12)';
+      row.style.borderLeft='2px solid '+sys.color;
+      row.style.paddingLeft='10px';
+    }
+  });
+  row.addEventListener('mouseleave',function(){
+    row.style.background='';
+    row.style.borderLeft='';
+    row.style.paddingLeft='';
+  });
+
+  row.addEventListener('click',function(){
+    var id=row.dataset.sys;
+    var nodeIdx=-1;
+    for(var i=0;i<nodes.length;i++){
+      if(nodes[i].sys.id===id){nodeIdx=i;break;}
+    }
+    if(nodeIdx<0) return;
+    var nd=nodes[nodeIdx];
+
+    // Target: node.theta at front-center means (nd.theta - rotY) mod 2π ≈ π/2
+    // Always travel FORWARD (positive rotY increase = clockwise = same as auto-rotate)
+    var targetRotY = nd.theta - Math.PI/2;
+    var diff = targetRotY - rotY;
+    // Normalise to [0, 2π] — always go forward
+    diff = ((diff % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+    if(diff < 0.05) diff += Math.PI*2; // avoid trivial near-zero snap
+
+    var startY = rotY;
+    var startT = performance.now();
+    // Speed proportional to distance — minimum 400ms, max 1400ms
+    var snapDur = Math.max(400, Math.min(1400, diff / (Math.PI*2) * 1200));
+    rotPaused = true;
+    velY = 0;
+
+    function snapAnim(now){
+      var p = Math.min((now-startT)/snapDur, 1);
+      // Ease-in then ease-out: fast in middle like a momentum-driven snap
+      var ease = p < 0.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
+      rotY = startY + diff * ease;
+      if(p < 1){
+        requestAnimationFrame(snapAnim);
+      } else {
+        rotY = startY + diff;
+        rotPaused = true;
+        velY = 0;
+        glowIdx = nodeIdx;
+        hoveredIdx = nodeIdx;
+        showSnapDismiss();
+      }
+    }
+    requestAnimationFrame(snapAnim);
+  });
+});
+
+// ── DRAG-TO-REORDER In Orbit rows ──
+(function(){
+  var container = document.querySelector('.ps'); // first .ps = "In Orbit"
+  var rows = Array.from(container.querySelectorAll('.si.on'));
+  var dragSrc = null, longPressTimer = null, dragActive = false;
+
+  rows.forEach(function(row){
+    var handle = row.querySelector('.drag-handle');
+    if(!handle) return;
+
+    // Long-press to activate drag
+    handle.addEventListener('mousedown', function(e){
+      e.preventDefault();
+      longPressTimer = setTimeout(function(){
+        dragActive = true;
+        dragSrc = row;
+        row.classList.add('dragging');
+        row.style.transition = 'none';
+      }, 220); // 220ms long-press
+    });
+    document.addEventListener('mouseup', function(){
+      clearTimeout(longPressTimer);
+      if(dragSrc){ dragSrc.classList.remove('dragging'); dragSrc.style.transition=''; }
+      container.querySelectorAll('.si').forEach(function(r){ r.classList.remove('drag-over'); });
+      dragSrc = null; dragActive = false;
+    }, {once:false});
+
+    row.addEventListener('mouseenter', function(){
+      if(!dragActive || !dragSrc || row === dragSrc) return;
+      // Remove all drag-over indicators
+      rows.forEach(function(r){ r.classList.remove('drag-over'); });
+      row.classList.add('drag-over');
+      // Reorder in DOM
+      var allRows = Array.from(container.querySelectorAll('.si.on'));
+      var srcIdx = allRows.indexOf(dragSrc);
+      var tgtIdx = allRows.indexOf(row);
+      if(srcIdx < tgtIdx){
+        container.insertBefore(dragSrc, row.nextSibling);
+      } else {
+        container.insertBefore(dragSrc, row);
+      }
+    });
+  });
+})();
+
+// ── COMING SOON tooltip on locked pathway rows ──
+(function(){
+  var tip = document.createElement('div');
+  tip.textContent = 'Coming soon';
+  tip.style.cssText = 'position:fixed;z-index:9999;background:rgba(8,12,24,.92);border:1px solid rgba(201,169,110,.28);'
+    +'color:rgba(201,169,110,.9);font-family:"Syne",sans-serif;font-size:.52rem;letter-spacing:.18em;'
+    +'text-transform:uppercase;padding:5px 11px;border-radius:3px;pointer-events:none;opacity:0;transition:opacity .18s;'
+    +'white-space:nowrap;backdrop-filter:blur(8px);';
+  document.body.appendChild(tip);
+
+  JOURNEY.forEach(function(j){
+    if(j.n > 6) return; // only locked rows (n <= 6)
+    var row = document.getElementById('pathway-row-'+j.n);
+    if(!row) return;
+    row.style.cursor = 'default';
+    row.addEventListener('mouseenter', function(e){
+      tip.style.opacity = '1';
+      tip.style.left = (e.clientX + 12) + 'px';
+      tip.style.top  = (e.clientY - 8) + 'px';
+    });
+    row.addEventListener('mousemove', function(e){
+      tip.style.left = (e.clientX + 12) + 'px';
+      tip.style.top  = (e.clientY - 8) + 'px';
+    });
+    row.addEventListener('mouseleave', function(){
+      tip.style.opacity = '0';
+    });
+  });
+})();
+
+// ━━ DRAW ━━
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  var t=Date.now()*.001;
+
+  // Auto-rotate — always lerp toward target when not paused; when paused just hold
+  var vTarget = window._speedTarget !== undefined ? window._speedTarget : 0.002;
+  if(!rotPaused&&!dragging){ velY+=(vTarget-velY)*0.015; rotY+=velY; }
+  // Note: no velY decay when paused — preserves speed setting for when rotation resumes
+
+  // Animate node scales, line lengths, and glow/mute
+  nodes.forEach(function(nd,i){
+    var isHov=(i===hoveredIdx);
+    nd.scale+=(( isHov?1.65:1)-nd.scale)*0.12;
+    nd.linePct+=((isHov?(1/9):0)-nd.linePct)*0.1;
+    // Glow: lit=1 if this node is highlighted, muted=-1 if another is, else 0
+    var glowTarget = (glowIdx<0) ? 0 : (i===glowIdx ? 1 : -1);
+    nd.glow += (glowTarget - nd.glow) * 0.1;
+  });
+
+  // ── TORUS ENERGY FIELD ──
+  if(!window._hideTorus){
+  // TORUS FLOW LOGIC:
+  // One master clock. Each "bead" has a full cycle of 1.0:
+  //   Phase 0.0 → 0.5 : bead rises through central channel (pure aqua throughout)
+  //   Phase 0.5 → 1.0 : bead splits into two arc beads descending around the torus edge
+  //                      color: violet at top pole → fades to red approaching bottom pole
+  //
+  // FIRST-LOAD BEHAVIOR (window._beadBorn flag):
+  //   Bead A starts immediately. Bead B only activates once bead A reaches the top (phase A >= 0.5).
+  //
+  // CENTER GLOW sync (computed here, used below outside _hideTorus block):
+  //   Smallest when arc beads arrive at bottom pole (aPhase = 1.0, i.e. full cycle = 1.0)
+  //   Largest when arc beads arrive at bottom pole departing (i.e. new bead just left bottom = phase 0)
+  //   Actually: largest when bead is at BOTTOM (just born / just arrived), smallest at TOP (just split).
+  //   So glowR is max at cyclePos=0 (bottom), min at cyclePos=0.5 (top).
+
+  var torusT   = t * 0.026;
+  var cyclePos = torusT % 1;    // 0→1 master, bead A phase
+
+  var topY = CY - R;
+  var botY = CY + R;
+  var aquaRGB  = '78,205,196';   // pure aqua  — rising bead color
+  var violetRGB= '155,114,207';  // violet     — arc bead color at top
+  var redRGB   = '232,80,80';    // red        — arc bead color at bottom
+
+  // First-load gate: bead B only active once bead A has completed its first rise
+  if(typeof window._beadBorn === 'undefined') window._beadBorn = false;
+  if(!window._beadBorn && cyclePos >= 0.5) window._beadBorn = true;
+
+  // 1. CENTRAL CHANNEL
+  var chanFaint = ctx.createLinearGradient(CX, botY, CX, topY);
+  chanFaint.addColorStop(0,   'rgba(200,210,220,.055)');
+  chanFaint.addColorStop(0.5, 'rgba(200,215,225,.11)');
+  chanFaint.addColorStop(1,   'rgba(200,210,220,.055)');
+  ctx.beginPath(); ctx.moveTo(CX, botY); ctx.lineTo(CX, topY);
+  ctx.strokeStyle = chanFaint; ctx.lineWidth = 1.32; ctx.stroke();
+
+  // 2. TOP POLE HALO -- violet (always)
+  var thg = ctx.createRadialGradient(CX, topY, 0, CX, topY, 36);
+  thg.addColorStop(0, 'rgba(155,114,207,.18)');
+  thg.addColorStop(0.5,'rgba(155,114,207,.08)');
+  thg.addColorStop(1,  'rgba(155,114,207,0)');
+  ctx.beginPath(); ctx.arc(CX, topY, 36, 0, Math.PI*2);
+  ctx.fillStyle = thg; ctx.fill();
+
+  // 3. BOTTOM POLE HALO -- red (always)
+  var bhg = ctx.createRadialGradient(CX, botY, 0, CX, botY, 32);
+  bhg.addColorStop(0, 'rgba(232,80,80,.18)');
+  bhg.addColorStop(0.5,'rgba(232,80,80,.07)');
+  bhg.addColorStop(1,  'rgba(232,80,80,0)');
+  ctx.beginPath(); ctx.arc(CX, botY, 32, 0, Math.PI*2);
+  ctx.fillStyle = bhg; ctx.fill();
+
+  // ── HELPER: Rising aqua bead through central channel ──
+  // ph = full cycle phase 0→1; only draws when ph < 0.5
+  function drawRisingBead(ph){
+    if(ph >= 0.5) return;
+    var rPhase = ph / 0.5;              // 0=bottom, 1=top
+    var beadY  = botY + (topY - botY) * rPhase;
+    // Fade in from bottom pole, fade out into top pole
+    var rAlpha = rPhase < 0.06 ? rPhase/0.06
+               : rPhase > 0.94 ? (1-rPhase)/0.06
+               : 1.0;
+    rAlpha *= 0.82;
+    // Halo size: constant small (matches center glow max) — pure aqua, no color change
+    var hr = 11; // fixed halo radius in px — matches glowR peak
+    var bg2 = ctx.createRadialGradient(CX, beadY, 0, CX, beadY, hr);
+    bg2.addColorStop(0,   'rgba('+aquaRGB+','+rAlpha+')');
+    bg2.addColorStop(0.45,'rgba('+aquaRGB+','+(rAlpha*.5)+')');
+    bg2.addColorStop(1,   'rgba('+aquaRGB+',0)');
+    ctx.beginPath(); ctx.arc(CX, beadY, hr, 0, Math.PI*2);
+    ctx.fillStyle = bg2; ctx.fill();
+    // Bright aqua pinpoint core
+    ctx.beginPath(); ctx.arc(CX, beadY, 2.5, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba('+aquaRGB+','+(rAlpha*1.3)+')'; ctx.fill();
+    // Comet tail downward
+    var sg2 = ctx.createLinearGradient(CX, beadY, CX, beadY + 28);
+    sg2.addColorStop(0,   'rgba('+aquaRGB+','+(rAlpha*.88)+')');
+    sg2.addColorStop(0.5, 'rgba('+aquaRGB+','+(rAlpha*.28)+')');
+    sg2.addColorStop(1,   'rgba('+aquaRGB+',0)');
+    ctx.beginPath(); ctx.moveTo(CX, beadY); ctx.lineTo(CX, beadY+28);
+    ctx.strokeStyle = sg2; ctx.lineWidth = 2.2; ctx.stroke();
+  }
+
+  // ── HELPER: Arc beads descending around torus edge ──
+  // ph = full cycle phase 0→1; only draws when ph >= 0.5
+  // Color: violet at top (aPhase=0) → stays violet to equator (aPhase=0.5) → fades to red toward bottom (aPhase=0.5→1)
+  function drawArcBeads(ph){
+    if(ph < 0.5) return;
+    var aPhase = (ph - 0.5) / 0.5;   // 0=top pole, 1=bottom pole
+    var arcAngle = aPhase * Math.PI;  // 0=top, π=bottom
+    var lbx = CX - Math.sin(arcAngle) * R;
+    var lby = CY - Math.cos(arcAngle) * R;
+    var rbx = CX + Math.sin(arcAngle) * R;
+    var rby = lby; // same y
+    // Fade at poles
+    var aAlpha = aPhase < 0.06 ? aPhase/0.06
+               : aPhase > 0.94 ? (1-aPhase)/0.06
+               : 1.0;
+    aAlpha *= 0.72;
+    // Color: pure violet (0→0.5), fade violet→red (0.5→1)
+    var arc_r, arc_g, arc_b;
+    if(aPhase <= 0.5){
+      // Pure violet the entire top half
+      arc_r = 155; arc_g = 114; arc_b = 207;
+    } else {
+      // Gentle fade from violet to red in bottom half
+      var cf = (aPhase - 0.5) / 0.5;  // 0→1
+      cf = cf * cf; // ease in — slow start, accelerates near bottom
+      arc_r = Math.round(155 + (232-155)*cf);
+      arc_g = Math.round(114 + (80 -114)*cf);
+      arc_b = Math.round(207 + (80 -207)*cf);
+    }
+    var arcRGB = arc_r+','+arc_g+','+arc_b;
+
+    [[-1, lbx, lby],[1, rbx, rby]].forEach(function(b){
+      var side=b[0], bx=b[1], by=b[2];
+      if(aAlpha < 0.01) return;
+      // Faint arc trail
+      ctx.beginPath();
+      ctx.arc(CX, CY, R, -Math.PI/2, -Math.PI/2 + side*Math.PI, side < 0);
+      ctx.strokeStyle = 'rgba('+arcRGB+',.05)';
+      ctx.lineWidth = 0.9; ctx.stroke();
+      // Bead glow
+      var abg = ctx.createRadialGradient(bx, by, 0, bx, by, 16);
+      abg.addColorStop(0,   'rgba('+arcRGB+','+aAlpha+')');
+      abg.addColorStop(0.4, 'rgba('+arcRGB+','+(aAlpha*.4)+')');
+      abg.addColorStop(1,   'rgba('+arcRGB+',0)');
+      ctx.beginPath(); ctx.arc(bx, by, 16, 0, Math.PI*2);
+      ctx.fillStyle = abg; ctx.fill();
+      // Bright pinpoint
+      ctx.beginPath(); ctx.arc(bx, by, 2.2, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba('+arcRGB+','+(aAlpha*1.5)+')';
+      ctx.fill();
+    });
+  }
+
+  // ── DRAW BEADS ──
+  // Bead A: runs from page load
+  drawRisingBead(cyclePos);
+  drawArcBeads(cyclePos);
+  // Bead B: only activates once bead A has first reached the top pole (first-load gate)
+  if(window._beadBorn){
+    var phaseB = (cyclePos + 0.5) % 1;
+    drawRisingBead(phaseB);
+    drawArcBeads(phaseB);
+  }
+
+  } // end _hideTorus
+  var bg=ctx.createRadialGradient(CX,CY,0,CX,CY,R*1.5);
+  bg.addColorStop(0,'rgba(155,114,207,.08)');bg.addColorStop(0.6,'rgba(78,205,196,.04)');bg.addColorStop(1,'rgba(4,5,10,0)');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // ── OUTER SPHERE EDGE ──
+  ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(200,210,220,.13)';ctx.lineWidth=0.88;ctx.stroke();
+
+  // Latitude rings (subtle)
+  for(var lat=-60;lat<=60;lat+=20){
+    var cosL=Math.cos(lat*Math.PI/180),sinL=Math.sin(lat*Math.PI/180);
+    var lR=R*cosL,lY=CY-R*sinL*Math.cos(0.18);
+    var eB=lR*Math.abs(Math.sin(0.18+0.3));
+    if(eB<1)eB=1;
+    ctx.beginPath();ctx.ellipse(CX,lY,lR,eB,0,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,.025)';ctx.lineWidth=0.35;ctx.stroke();
+  }
+
+  // ── CENTER GLOW — synced to torus: LARGEST when beads at bottom pole, SMALLEST when at top pole
+  // cyclePos=0: beads at bottom (just born / just arrived) → glow MAX
+  // cyclePos=0.5: beads at top (just split) → glow MIN
+  // cos(cyclePos*2π) = +1 at 0, -1 at 0.5 — perfect, use directly
+  var torusCycle = (t * 0.026) % 1;
+  var cycleGlow = 0.5 + 0.5 * Math.cos(torusCycle * Math.PI * 2); // 1 at bottom, 0 at top
+  var selfB = 0.3 + 0.7 * cycleGlow; // 0.3 (small, beads at top) → 1.0 (large, beads at bottom)
+  var glowR = Math.max(2, 11 * selfB); // max 11px — matches rising bead halo hr=11
+  var sg=ctx.createRadialGradient(CX,CY,0,CX,CY,glowR);
+  sg.addColorStop(0,    'rgba(201,169,110,.98)');
+  sg.addColorStop(0.45, 'rgba(201,169,110,.72)');
+  sg.addColorStop(0.68, 'rgba(140,195,135,.28)');
+  sg.addColorStop(0.85, 'rgba(155,114,207,.14)');
+  sg.addColorStop(1,    'rgba(155,114,207,0)');
+  ctx.beginPath();ctx.arc(CX,CY,glowR,0,Math.PI*2);ctx.fillStyle=sg;ctx.fill();
+  ctx.beginPath();ctx.arc(CX,CY,2.5,0,Math.PI*2);ctx.fillStyle='rgba(255,240,200,.95)';ctx.fill();
+
+  // ── NODES ──
+  // Sort back to front
+  var sorted=nodes.slice().sort(function(a,b){
+    return project(a.phi,a.theta,R).z - project(b.phi,b.theta,R).z;
+  });
+  tipCache=new Array(nodes.length).fill(null);
+
+  sorted.forEach(function(nd){
+    var wob=0; // no wobble — nodes orbit steadily
+    // Clockwise: subtract rotation offset so theta increases clockwise
+    var tip=project(nd.phi, nd.theta, R);
+    tipCache[nd.idx]=tip;
+
+    var isFront=tip.z>-R*0.15;
+    // Skip if projecting too close to visual center (avoids overlap with center glow)
+    var distFromCenter=Math.sqrt((tip.x-CX)*(tip.x-CX)+(tip.y-CY)*(tip.y-CY));
+    if(distFromCenter < 28) return;
+    var depthAlpha=isFront?1:0.18;
+    var rgb=hexRGB(nd.color);
+
+    // Glow/mute: nd.glow in [-1,1]. +1=lit bright, -1=muted dim
+    var glowMult = 1 + nd.glow * 0.55;   // 1.55 when lit, 0.45 when muted
+    depthAlpha = Math.max(0, Math.min(1.0, depthAlpha * glowMult));
+
+    // Twinkle and pulse removed — nodes are steady, only torus center pulses
+    var sc=nd.scale;
+
+    // ── HOVER LINE: inward toward center ──
+    if(nd.linePct>0.005){
+      var lineR=R*(1-nd.linePct);
+      var lt=project(nd.phi, nd.theta-wob, lineR);
+      var lg=ctx.createLinearGradient(lt.x,lt.y,tip.x,tip.y);
+      lg.addColorStop(0,'rgba('+rgb+',0)');
+      lg.addColorStop(0.4,'rgba('+rgb+','+(depthAlpha*.2)+')');
+      lg.addColorStop(1,'rgba('+rgb+','+(depthAlpha*.7)+')');
+      ctx.beginPath();ctx.moveTo(lt.x,lt.y);ctx.lineTo(tip.x,tip.y);
+      ctx.strokeStyle=lg;ctx.lineWidth=1.4;ctx.stroke();
+    }
+
+    // ── GEMSTONE ORB ──
+    var ts = 11.88 * sc * (isFront ? 1 : 0.55);
+
+    // ── GLOW HALO — when node is lit (hovered or snap-selected) ──
+    if(nd.glow > 0.05 && isFront){
+      var haloR = ts * (2.8 + nd.glow * 1.2);
+      var hg = ctx.createRadialGradient(tip.x, tip.y, ts*0.6, tip.x, tip.y, haloR);
+      hg.addColorStop(0,   'rgba('+rgb+','+(nd.glow*.38)+')');
+      hg.addColorStop(0.5, 'rgba('+rgb+','+(nd.glow*.14)+')');
+      hg.addColorStop(1,   'rgba('+rgb+',0)');
+      ctx.beginPath(); ctx.arc(tip.x, tip.y, haloR, 0, Math.PI*2);
+      ctx.fillStyle = hg; ctx.fill();
+    }
+
+    // ── COMET TAIL ──
+    if(isFront && depthAlpha > 0.3){
+      var tailTip = project(nd.phi, nd.theta - wob + 0.18, R * 0.97);
+      var tailGrad = ctx.createLinearGradient(tip.x, tip.y, tailTip.x, tailTip.y);
+      tailGrad.addColorStop(0, 'rgba('+rgb+','+(depthAlpha*.55)+')');
+      tailGrad.addColorStop(0.5,'rgba('+rgb+','+(depthAlpha*.18)+')');
+      tailGrad.addColorStop(1, 'rgba('+rgb+',0)');
+      ctx.beginPath();ctx.moveTo(tip.x,tip.y);ctx.lineTo(tailTip.x,tailTip.y);
+      ctx.strokeStyle=tailGrad;ctx.lineWidth=ts*.35;ctx.lineCap='round';ctx.stroke();
+    }
+
+    // Outer soft glow
+    var gl=ctx.createRadialGradient(tip.x,tip.y,0,tip.x,tip.y,ts*4.5);
+    gl.addColorStop(0,'rgba('+rgb+','+(depthAlpha*(nd.scale>1.2?.45:.18))+')');
+    gl.addColorStop(0.5,'rgba('+rgb+','+(depthAlpha*.08)+')');
+    gl.addColorStop(1,'rgba('+rgb+',0)');
+    ctx.beginPath();ctx.arc(tip.x,tip.y,ts*4.5,0,Math.PI*2);ctx.fillStyle=gl;ctx.fill();
+
+    // Mid facet ring
+    var ml=ctx.createRadialGradient(tip.x,tip.y,0,tip.x,tip.y,ts*1.6);
+    ml.addColorStop(0,'rgba('+rgb+','+(depthAlpha*.65)+')');
+    ml.addColorStop(1,'rgba('+rgb+',0)');
+    ctx.beginPath();ctx.arc(tip.x,tip.y,ts*1.6,0,Math.PI*2);ctx.fillStyle=ml;ctx.fill();
+
+    // Core gemstone with specular highlight
+    var specX=tip.x-ts*.38, specY=tip.y-ts*.38;
+    var og=ctx.createRadialGradient(specX,specY,0,tip.x,tip.y,ts);
+    og.addColorStop(0,'rgba(255,255,255,'+(depthAlpha*(isFront?.92:.5))+')');
+    og.addColorStop(0.25,'rgba('+rgb+','+(depthAlpha*.98)+')');
+    og.addColorStop(0.65,'rgba('+rgb+','+(depthAlpha*.75)+')');
+    og.addColorStop(1,'rgba('+rgb+','+(depthAlpha*.2)+')');
+    ctx.beginPath();ctx.arc(tip.x,tip.y,ts,0,Math.PI*2);ctx.fillStyle=og;ctx.fill();
+
+    // Specular pinpoint (the "sparkle")
+    if(isFront){
+      ctx.beginPath();ctx.arc(specX,specY,ts*.22,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,'+(depthAlpha*.85)+')';ctx.fill();
+    }
+
+    // ── LABEL ──
+    if(isFront && !window._hideLabels){
+      var lAlpha=depthAlpha*(nd.idx===hoveredIdx?.98:.75);
+      ctx.fillStyle='rgba(232,228,220,'+lAlpha+')';
+      ctx.font='400 '+(nd.idx===hoveredIdx?'17.6':'15.5')+'px Syne';
+      ctx.textAlign='center';
+      ctx.fillText(nd.sys.name, tip.x, tip.y - ts - 14);
+    }
+  });
+
+  requestAnimationFrame(draw);
+}
+draw();
+
+// ━━ CHAT ━━
+var chatMsgs=document.getElementById('chat-msgs');
+var chatIn=document.getElementById('chat-in');
+var sendBtn=document.getElementById('send-btn');
+var suggEl=document.getElementById('chat-sugg');
+var history=[];
+function buildSYS(){
+  var p = window._userProfile || {};
+  var userLine = p.name
+    ? 'User: '+p.name+', born '+p.birthdate+(p.birth_time ? ' at '+p.birth_time : '')+', '+p.birth_location+'.'
+    : 'User: identity not yet loaded.';
+  return `You are the AI companion inside Temenos, a personal consciousness mapping app.
+
+`+userLine+`
+
+The user is at shell 9 — Discovery — the outermost layer where each knowledge system first presents itself. This is the beginning of a 9-shell inward journey. Role: warm, insightful, poetic but grounded. 3-5 sentences. Prose, no bullets.`;
+}
+var SYS = buildSYS();
+
+function addMsg(text,isAI){
+  var d=document.createElement('div');d.className='msg'+(isAI?' ai':'');
+  d.innerHTML='<div class="msg-r">'+(isAI?'Temenos':'You')+'</div><div class="msg-t">'+text.replace(/\n/g,'<br>')+'</div>';
+  chatMsgs.appendChild(d);chatMsgs.scrollTop=chatMsgs.scrollHeight;
+}
+function addTyping(){
+  var d=document.createElement('div');d.className='msg ai';
+  d.innerHTML='<div class="msg-r">Temenos</div><div class="msg-t"><div class="typing"><span></span><span></span><span></span></div></div>';
+  chatMsgs.appendChild(d);chatMsgs.scrollTop=chatMsgs.scrollHeight;return d;
+}
+async function send(text){
+  if(!text.trim())return;
+  addMsg(text,false);history.push({role:'user',content:text});
+  var ty=addTyping();
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildSYS(),messages:history})
+    });
+    var d=await r.json();
+    var rep=(d.content&&d.content[0]&&d.content[0].text)||'Something went quiet.';
+    ty.remove();addMsg(rep,true);history.push({role:'assistant',content:rep});
+    updateSuggestions();
+  }catch(e){ty.remove();addMsg('The connection faded. Try again.',true);}
+}
+
+async function updateSuggestions(){
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:200,
+        system:'You are generating 3 short follow-up question suggestions for a consciousness mapping app chat. Based on the conversation so far, return ONLY a JSON array of 3 short question strings (max 8 words each). No other text, no markdown.',
+        messages:[...history,{role:'user',content:'Suggest 3 short follow-up questions as a JSON array.'}]
+      })
+    });
+    var d=await r.json();
+    var txt=(d.content&&d.content[0]&&d.content[0].text)||'';
+    var clean=txt.replace(/```json|```/g,'').trim();
+    var qs=JSON.parse(clean);
+    if(Array.isArray(qs)&&qs.length>=3){
+      var btns=suggEl.querySelectorAll('.sqbtn');
+      qs.slice(0,3).forEach(function(q,i){
+        if(btns[i]){btns[i].textContent=q;btns[i].dataset.q=q;}
+      });
+    }
+  }catch(e){/* keep existing suggestions */}
+}
+async function replaceSuggestion(btn){
+  // Fade out the clicked button
+  btn.style.opacity='0.3';btn.style.pointerEvents='none';
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:80,
+        system:'You are generating a single short follow-up question for a consciousness mapping app chat. Based on the conversation, return ONLY one question string, max 9 words, no quotes, no punctuation at the end, no extra text.',
+        messages:[...history,{role:'user',content:'Give me one new short follow-up question I could ask.'}]
+      })
+    });
+    var d=await r.json();
+    var q=((d.content&&d.content[0]&&d.content[0].text)||'').replace(/^["']|["']$/g,'').trim();
+    if(q){btn.textContent=q;btn.dataset.q=q;}
+  }catch(e){/* keep existing */}
+  btn.style.opacity='1';btn.style.pointerEvents='auto';
+}
+sendBtn.addEventListener('click',function(){send(chatIn.value);chatIn.value='';chatIn.style.height='auto';});
+chatIn.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send(chatIn.value);chatIn.value='';chatIn.style.height='auto';}});
+chatIn.addEventListener('input',function(){chatIn.style.height='auto';chatIn.style.height=Math.min(chatIn.scrollHeight,90)+'px';});
+document.querySelectorAll('.sqbtn').forEach(function(b){
+  b.addEventListener('click',function(){
+    var q=b.dataset.q||b.textContent;
+    send(q);
+    replaceSuggestion(b);
+  });
+});
+
+// ── SETTINGS MODAL ──
+var settingsModal = document.getElementById('settings-modal');
+var settingsCard  = document.getElementById('settings-card');
+function openSettings(){
+  settingsModal.style.opacity='1'; settingsModal.style.pointerEvents='auto';
+  settingsCard.style.transform='scale(1) translateY(0)';
+}
+function closeSettings(){
+  settingsModal.style.opacity='0'; settingsModal.style.pointerEvents='none';
+  settingsCard.style.transform='scale(.94) translateY(8px)';
+}
+document.getElementById('settings-btn').addEventListener('click', openSettings);
+document.getElementById('settings-close').addEventListener('click', closeSettings);
+document.getElementById('settings-backdrop').addEventListener('click', closeSettings);
+
+// Speed slider → velY target
+document.getElementById('setting-speed').addEventListener('input', function(){
+  var v = parseInt(this.value) / 100;
+  // 0→ nearly stopped (0.0002), 100→ fast (0.012), default 40 = 0.002
+  var target = 0.0002 + v * v * 0.012;
+  velY = target;
+  // Patch the draw loop target inline by overriding velY each frame
+  window._speedTarget = target;
+});
+
+// Labels toggle
+document.getElementById('setting-labels').addEventListener('change', function(){
+  window._hideLabels = !this.checked;
+});
+
+// Torus toggle
+document.getElementById('setting-torus').addEventListener('change', function(){
+  window._hideTorus = !this.checked;
+});
+
+// Stars toggle
+document.getElementById('setting-stars').addEventListener('change', function(){
+  var stars = document.getElementById('stars');
+  if(stars) stars.style.opacity = this.checked ? '1' : '0';
+});
+
+// Cursor toggle
+document.getElementById('setting-cursor').addEventListener('change', function(){
+  var dot  = document.getElementById('cdot');
+  var ring = document.getElementById('cring');
+  if(dot)  dot.style.opacity  = this.checked ? '' : '0';
+  if(ring) ring.style.opacity = this.checked ? '' : '0';
+});
+
+// Support btn — placeholder
+document.getElementById('support-btn').addEventListener('click', function(){
+  alert('Support coming soon. Please email support@mytemenos.com');
+});
+
+// ── UNLOCK SECTION: hover greyed rows / add button → illuminate add btn ──
+(function(){
+  var addBtn = document.getElementById('add-more-btn');
+  function illuminate(){
+    addBtn.style.background='rgba(78,205,196,.22)';
+    addBtn.style.borderColor='rgba(78,205,196,.75)';
+    addBtn.style.color='#4ecdc4';
+    addBtn.style.boxShadow='0 0 14px rgba(78,205,196,.35), inset 0 0 8px rgba(78,205,196,.08)';
+  }
+  function dimAdd(){
+    addBtn.style.background='rgba(78,205,196,.07)';
+    addBtn.style.borderColor='rgba(78,205,196,.4)';
+    addBtn.style.color='rgba(78,205,196,.8)';
+    addBtn.style.boxShadow='';
+  }
+  document.querySelectorAll('.si.off').forEach(function(el){
+    el.addEventListener('mouseenter', illuminate);
+    el.addEventListener('mouseleave', dimAdd);
+  });
+  addBtn.addEventListener('mouseenter', illuminate);
+  addBtn.addEventListener('mouseleave', dimAdd);
+})();
+
+// ── ADD A SYSTEM SHOP MODAL ──
+(function(){
+  var SHOP_ITEMS = [
+    {id:'enn',   name:'Enneagram',           sub:'Type · Wing · Tritype',           color:'#8cd8d2'},
+    {id:'mbti',  name:'Myers-Briggs',         sub:'Type · Cognitive Functions',      color:'#b96ea5'},
+    {id:'num',   name:'Numerology',           sub:'Life Path · Expression · Soul',   color:'#c9a96e'},
+    {id:'ifs',   name:'Internal Family Systems', sub:'Parts · Self Energy · Exiles', color:'#dc9b5f'},
+    {id:'arch',  name:'Archetype',            sub:'Jungian · Universal Patterns',    color:'#8b82cd'},
+    {id:'custom',name:'Custom Node',          sub:'Define your own system or practice', color:'#4ecdc4'},
+  ];
+
+  // Create modal
+  var shopOverlay = document.createElement('div');
+  shopOverlay.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;';
+  shopOverlay.innerHTML = '<div id="shop-backdrop" style="position:absolute;inset:0;background:rgba(4,5,10,.55);backdrop-filter:blur(4px);"></div>';
+
+  var shopCard = document.createElement('div');
+  shopCard.style.cssText = 'position:relative;z-index:1;width:min(540px,88%);background:rgba(8,12,24,.92);border:1px solid rgba(255,255,255,.1);border-radius:12px;backdrop-filter:blur(32px);box-shadow:0 0 80px rgba(0,0,0,.7);overflow:hidden;transform:scale(.94) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);';
+  shopCard.innerHTML = '<div style="height:2px;background:linear-gradient(90deg,transparent,rgba(78,205,196,.7),transparent);"></div>'
+    +'<div style="padding:28px 28px 24px;">'
+    +'<button id="shop-close" style="position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(232,228,220,.4);font-size:1rem;">✕</button>'
+    +'<div style="font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;color:#4ecdc4;margin-bottom:4px;">Add a System</div>'
+    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:1.35rem;font-weight:300;color:var(--text);margin-bottom:6px;">Expand Your Sphere</div>'
+    +'<div style="font-size:.62rem;color:var(--muted);margin-bottom:22px;letter-spacing:.04em;">Each system adds a new node to your sphere &nbsp;·&nbsp; <span style="color:var(--gold);">$9.99 each</span></div>'
+    +'<div id="shop-items" style="display:flex;flex-direction:column;gap:8px;"></div>'
+    +'<div style="margin-top:18px;font-size:.52rem;color:rgba(232,228,220,.28);letter-spacing:.06em;text-align:center;">Payment integration coming soon · Selections saved to your profile</div>'
+    +'</div>';
+
+  var itemsEl;
+  shopOverlay.appendChild(shopCard);
+  document.body.appendChild(shopOverlay);
+  itemsEl = shopCard.querySelector('#shop-items');
+
+  SHOP_ITEMS.forEach(function(item){
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid rgba(255,255,255,.07);border-radius:6px;background:rgba(255,255,255,.02);transition:background .18s,border-color .18s;';
+    row.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+item.color+';box-shadow:0 0 8px '+item.color+';"></div>'
+      +'<div style="flex:1;"><div style="font-size:.78rem;letter-spacing:.06em;color:var(--text);">'+item.name+'</div>'
+      +'<div style="font-size:.6rem;color:var(--muted);margin-top:2px;">'+item.sub+'</div></div>'
+      +'<div style="font-size:.72rem;color:var(--gold);font-family:\'Cormorant Garamond\',serif;font-weight:300;margin-right:10px;">$9.99</div>'
+      +'<button class="shop-add-btn" style="padding:6px 14px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.3);color:#4ecdc4;font-family:\'Syne\',sans-serif;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;white-space:nowrap;">Add</button>';
+    row.addEventListener('mouseenter', function(){ row.style.background='rgba(255,255,255,.05)'; row.style.borderColor='rgba(255,255,255,.12)'; });
+    row.addEventListener('mouseleave', function(){ row.style.background='rgba(255,255,255,.02)'; row.style.borderColor='rgba(255,255,255,.07)'; });
+    row.querySelector('.shop-add-btn').addEventListener('click', function(){
+      this.textContent = 'Added \u2713';
+      this.style.background = 'rgba(78,205,196,.2)';
+      this.style.borderColor = 'rgba(78,205,196,.5)';
+      this.disabled = true;
+    });
+    itemsEl.appendChild(row);
+  });
+
+  function openShop(){ shopOverlay.style.opacity='1'; shopOverlay.style.pointerEvents='auto'; shopCard.style.transform='scale(1) translateY(0)'; }
+  function closeShop(){ shopOverlay.style.opacity='0'; shopOverlay.style.pointerEvents='none'; shopCard.style.transform='scale(.94) translateY(8px)'; }
+
+  document.getElementById('add-more-btn').addEventListener('click', openShop);
+  shopCard.querySelector('#shop-close').addEventListener('click', closeShop);
+  shopOverlay.querySelector('#shop-backdrop').addEventListener('click', closeShop);
+})();
+
+// ── COLOR DOT HOVER GLOW + CLICK COLOR PICKER ──
+(function(){
+  var PALETTE = [
+    '#dc9b5f','#8b82cd','#d27870','#8cd8d2','#b96ea5',
+    '#6ea8c0','#c9a96e','#4ecdc4','#9b72cf','#e8705a'
+  ];
+  var picker = null;
+
+  function createPicker(dot, currentColor, onPick){
+    if(picker){ picker.remove(); picker=null; }
+    var p = document.createElement('div');
+    p.style.cssText = 'position:fixed;z-index:500;background:rgba(8,12,24,.96);border:1px solid rgba(255,255,255,.12);'
+      +'border-radius:8px;padding:12px;box-shadow:0 0 30px rgba(0,0,0,.7);backdrop-filter:blur(16px);width:192px;';
+    p.innerHTML = '<div style="font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;">Choose Color</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;" id="pal-grid"></div>';
+
+    var grid = p.querySelector('#pal-grid');
+    PALETTE.forEach(function(c){
+      var sw = document.createElement('div');
+      sw.style.cssText = 'width:26px;height:26px;border-radius:50%;background:'+c+';border:2px solid '+(c===currentColor?'rgba(255,255,255,.8)':'transparent')+';transition:transform .12s;';
+      sw.addEventListener('mouseenter', function(){ sw.style.transform='scale(1.2)'; });
+      sw.addEventListener('mouseleave', function(){ sw.style.transform=''; });
+      sw.addEventListener('click', function(){ onPick(c); p.remove(); picker=null; });
+      grid.appendChild(sw);
+    });
+    // no custom input
+
+    // Position near dot
+    var rect = dot.getBoundingClientRect();
+    var top = Math.min(rect.bottom + 6, window.innerHeight - 220);
+    var left = Math.max(6, Math.min(rect.left - 80, window.innerWidth - 200));
+    p.style.top = top+'px'; p.style.left = left+'px';
+    document.body.appendChild(p);
+    picker = p;
+
+    // Close on outside click
+    setTimeout(function(){
+      document.addEventListener('click', function outsideClick(e){
+        if(!p.contains(e.target) && e.target !== dot){
+          p.remove(); picker=null;
+          document.removeEventListener('click', outsideClick);
+        }
+      });
+    }, 50);
+  }
+
+  document.querySelectorAll('.si.on[data-sys]').forEach(function(row){
+    var dot = row.querySelector('.sdot');
+    if(!dot) return;
+    dot.style.transition = 'box-shadow .2s';
+    dot.style.cursor = 'pointer';
+    dot.addEventListener('mouseenter', function(){
+      dot.style.boxShadow = '0 0 10px 3px '+dot.style.background;
+    });
+    dot.addEventListener('mouseleave', function(){
+      dot.style.boxShadow = '';
+    });
+    dot.addEventListener('click', function(e){
+      e.stopPropagation();
+      createPicker(dot, dot.style.background, function(color){
+        dot.style.background = color;
+        // Update the node color in the SYSTEMS array and nodes array
+        var sysId = row.dataset.sys;
+        var sys = SYSTEMS.find(function(s){ return s.id===sysId; });
+        if(sys){ sys.color = color; }
+        var nd = nodes.find(function(n){ return n.sys.id===sysId; });
+        if(nd){ nd.color = color; }
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
