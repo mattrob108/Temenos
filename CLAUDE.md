@@ -22,6 +22,11 @@ public/
   index.html    — Marketing landing page (unauthenticated)
   app.html      — Main app with auth gate, sphere, chat, pathways, shop
   sphere.html   — Standalone sphere sandbox (no auth, hardcoded profile)
+supabase/
+  config.toml   — Supabase project config (project ref, ports, auth settings)
+  migrations/   — SQL migrations applied in order (schema, RLS, etc.)
+  functions/    — Supabase Edge Functions (server-side logic)
+  seed/         — Seed data for local development
 .env.example    — Template for environment variables
 .gitignore      — Git ignore rules
 CLAUDE.md       — This file (project context for AI sessions)
@@ -53,8 +58,27 @@ package.json    — Project metadata and scripts
 
 ## Supabase details
 - **Project ref**: isfdktgunaquujmvklcr
-- **Database tables**: profiles (name, birthdate, birth_time, plan)
-- **Auth**: Magic link (email OTP)
+- **Auth**: Magic link (email OTP) via `signInWithOtp`
+- **Database schema**:
+
+### `profiles` table
+| Column            | Type        | Notes                                      |
+|-------------------|-------------|--------------------------------------------|
+| id                | uuid (PK)   | References auth.users(id), cascade delete  |
+| name              | text        | Full name, collected at onboarding         |
+| email             | text        | From auth, stored for convenience          |
+| birthdate         | date        | Collected at onboarding                    |
+| birth_location    | text        | Place of birth                             |
+| birth_time        | time        | Optional, nullable                         |
+| plan              | text        | 'free' by default, for future tiers        |
+| systems_unlocked  | jsonb       | Array of unlocked system IDs, default '[]' |
+| created_at        | timestamptz | Auto-set on insert                         |
+| updated_at        | timestamptz | Auto-updated via trigger                   |
+
+### RLS policies (Row Level Security)
+- Users can SELECT, INSERT, UPDATE only their own row (where `auth.uid() = id`)
+- No DELETE policy (admin-only operation)
+- All access requires authentication (anon key + valid JWT)
 
 ## Coding conventions
 - Vanilla JS (no frameworks, no build step currently)
