@@ -707,10 +707,16 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     var redirectTo = window.location.origin + window.location.pathname;
     sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true, emailRedirectTo: redirectTo } })
       .then(function(res){
-        if(res.error){ showErr(signinErr, res.error.message); signinBtn.textContent='Send Magic Link'; signinBtn.disabled=false; return; }
+        if(res.error){
+          console.error('Supabase OTP error:', res.error);
+          showErr(signinErr, res.error.message);
+          signinBtn.textContent='Send Magic Link'; signinBtn.disabled=false;
+          return;
+        }
         checkAddr.textContent = email;
         showScreen('check');
       }).catch(function(err){
+        console.error('sendMagicLink catch:', err);
         showErr(signinErr, err.message || 'Something went wrong. Please try again.');
         signinBtn.textContent='Send Magic Link'; signinBtn.disabled=false;
       });
@@ -810,7 +816,9 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 
 // ━━ CURSOR ━━
 (function(){
-  var dot=document.getElementById('cdot'),ring=document.getElementById('cring');
+  // Create cursor elements dynamically so they're always at end of body
+  var dot=document.createElement('div'); dot.id='cdot'; document.body.appendChild(dot);
+  var ring=document.createElement('div'); ring.id='cring'; document.body.appendChild(ring);
   var mx=-300,my=-300,rx=-300,ry=-300;
   var s=document.createElement('style');s.textContent='html,body,*{cursor:none!important;}';document.head.appendChild(s);
   document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;},{passive:true});
@@ -2036,7 +2044,5 @@ document.getElementById('support-btn').addEventListener('click', function(){
   });
 })();
 </script>
-<div id="cdot"></div>
-<div id="cring"></div>
 </body>
 </html>
