@@ -800,14 +800,22 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
       var lat = parseFloat(document.getElementById('ob-lat').value) || null;
       var lng = parseFloat(document.getElementById('ob-lng').value) || null;
 
+      // Insert with base columns only (guaranteed to exist)
       sb.from('profiles').insert({
         id: uid, name: name, email: email,
         birthdate: bdate, birth_location: location, birth_time: btime,
-        birth_lat: lat, birth_lng: lng,
-        plan: 'explorer', systems_unlocked: '[]', trial_started_at: new Date().toISOString()
+        plan: 'explorer', systems_unlocked: '[]'
       }).then(function(ins){
         if(ins.error){ showErr(obError, ins.error.message); obSubmit.textContent='Submit'; obSubmit.disabled=false; return; }
-        applyProfile({ name:name, email:email, birthdate:bdate, birth_location:location, birth_time:btime, plan:'free' });
+
+        // Try to update optional columns (from later migrations) — silently ignore if columns don't exist yet
+        var extras = {};
+        if(lat !== null) extras.birth_lat = lat;
+        if(lng !== null) extras.birth_lng = lng;
+        extras.trial_started_at = new Date().toISOString();
+        sb.from('profiles').update(extras).eq('id', uid).then(function(){}).catch(function(){});
+
+        applyProfile({ name:name, email:email, birthdate:bdate, birth_location:location, birth_time:btime, plan:'explorer' });
 
         // Show disclaimer screen with sphere generation progress
         showScreen('disclaimer');
