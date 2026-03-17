@@ -1898,11 +1898,16 @@ async function send(text){
   addMsg(text,false);history.push({role:'user',content:text});
   var ty=addTyping();
   try{
+    console.log('[Temenos] Sending to AI...');
     var d=await aiChat(buildSYS(),history,1000);
+    console.log('[Temenos] AI response:', d);
     var rep=(d.content&&d.content[0]&&d.content[0].text)||'Something went quiet.';
     ty.remove();addMsg(rep,true);history.push({role:'assistant',content:rep});
     updateSuggestions();
-  }catch(e){ty.remove();addMsg('The connection faded. Try again.',true);}
+  }catch(e){
+    console.error('[Temenos] AI error:', e);
+    ty.remove();addMsg('The connection faded. Try again.',true);
+  }
 }
 
 async function updateSuggestions(){
