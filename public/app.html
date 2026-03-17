@@ -240,10 +240,10 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   <!-- SETTINGS MODAL -->
   <div id="settings-modal" style="position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;">
     <div id="settings-backdrop" style="position:absolute;inset:0;background:rgba(4,5,10,.5);backdrop-filter:blur(4px);"></div>
-    <div id="settings-card" style="position:relative;z-index:1;width:min(460px,85%);background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.1);border-radius:12px;backdrop-filter:blur(32px);box-shadow:0 0 80px rgba(0,0,0,.7);padding:0;overflow:hidden;transform:scale(.94) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);">
-      <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.7),transparent);"></div>
-      <div style="padding:28px 28px 24px;">
-        <button id="settings-close" style="position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(232,228,220,.4);font-size:1rem;">✕</button>
+    <div id="settings-card" style="position:relative;z-index:1;width:min(380px,82%);max-height:min(70vh,540px);background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.1);border-radius:12px;backdrop-filter:blur(32px);box-shadow:0 0 80px rgba(0,0,0,.7);padding:0;overflow:hidden;display:flex;flex-direction:column;transform:scale(.94) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);">
+      <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.7),transparent);flex-shrink:0;"></div>
+      <div style="padding:22px 24px 20px;overflow-y:auto;flex:1;">
+        <button id="settings-close" style="position:sticky;float:right;top:0;right:0;background:rgba(8,12,24,.9);border:1px solid rgba(255,255,255,.12);color:rgba(232,228,220,.6);font-size:.85rem;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;cursor:pointer;transition:color .2s,border-color .2s;" onmouseover="this.style.color='var(--gold)';this.style.borderColor='rgba(201,169,110,.4)'" onmouseout="this.style.color='rgba(232,228,220,.6)';this.style.borderColor='rgba(255,255,255,.12)'">✕</button>
         <div style="font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Settings</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--text);margin-bottom:24px;">Preferences</div>
 
@@ -371,7 +371,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     <div class="companion-section">
       <div class="ch" style="padding:10px 14px 8px;display:flex;align-items:center;">
         <div><div class="cht">Your Companion AI</div><div class="chs">Ask anything about your map</div></div>
-        <button id="hist-btn" title="Chat History" style="margin-left:auto;background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.22);color:#4ecdc4;font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;padding:5px 9px;border-radius:3px;flex-shrink:0;">History</button>
+        <button id="hist-btn" title="Save or view chat history" style="margin-left:auto;background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.22);color:#4ecdc4;font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;padding:5px 9px;border-radius:3px;flex-shrink:0;">Save/History</button>
       </div>
       <div class="chat-sugg" id="chat-sugg">
         <button class="sqbtn" data-q="Looking at my sphere for the first time — what do these five systems have in common when it comes to my specific chart?">What do my five systems share?</button>
@@ -1013,7 +1013,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 // ━━ JOURNEY LEGEND ━━
 var JOURNEY = [
   {n:9,name:'Discovery',   color:'rgba(140,220,210,',
-   desc:'<p style="margin:0 0 8px 0;">Explore knowledge systems, their basic teachings, and your pattern within them.</p><p style="margin:0;">Dive deeper by entering the sphere, where you\'ll encounter the foundational teachings of each system and your pattern.</p>'},
+   desc:'<p style="margin:0 0 8px 0;">Click each sphere to explore Knowledge Systems, their basic teachings, and your pattern within them.</p><p style="margin:0;">Dive deeper by entering the sphere, where you\'ll encounter the foundational teachings of each system and your pattern.</p>'},
   {n:8,name:'Foundations', color:'rgba(65,200,194,',
    desc:'Study the structural logic of each system you\'ve chosen — its historical roots, internal mechanics, and the specific outputs generated from your birth data. Build a working model before applying it.'},
   {n:7,name:'Application', color:'rgba(80,170,192,',
@@ -1381,10 +1381,13 @@ function renderSessions(){
 }
 function saveCurrentSession(){
   if(!history.length) return;
+  // Prompt user for a custom label
+  var defaultLabel=history[0].content.slice(0,48)+(history[0].content.length>48?'…':'');
+  var label=prompt('Name this session:',defaultLabel);
+  if(label===null) return; // user cancelled
+  label=label.trim()||defaultLabel;
   var now=new Date();
   var dateStr=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  // Label from first user message
-  var label=history[0].content.slice(0,48)+(history[0].content.length>48?'…':'');
   // Full transcript
   var full=history.map(function(m){return (m.role==='user'?'You':'Temenos')+': '+m.content;}).join('\n\n');
   // Preview — first exchange
@@ -1587,7 +1590,7 @@ function draw(){
   //   Actually: largest when bead is at BOTTOM (just born / just arrived), smallest at TOP (just split).
   //   So glowR is max at cyclePos=0 (bottom), min at cyclePos=0.5 (top).
 
-  var torusT   = t * 0.026;
+  var torusT   = t * 0.018;
   var cyclePos = torusT % 1;    // 0→1 master, bead A phase
 
   var topY = CY - R;
@@ -1634,7 +1637,7 @@ function draw(){
     var rAlpha = rPhase < 0.06 ? rPhase/0.06
                : rPhase > 0.94 ? (1-rPhase)/0.06
                : 1.0;
-    rAlpha *= 0.82;
+    rAlpha *= 0.55;
     // Halo size: constant small (matches center glow max) — pure aqua, no color change
     var hr = 11; // fixed halo radius in px — matches glowR peak
     var bg2 = ctx.createRadialGradient(CX, beadY, 0, CX, beadY, hr);
@@ -1645,7 +1648,7 @@ function draw(){
     ctx.fillStyle = bg2; ctx.fill();
     // Bright aqua pinpoint core
     ctx.beginPath(); ctx.arc(CX, beadY, 2.5, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba('+aquaRGB+','+(rAlpha*1.3)+')'; ctx.fill();
+    ctx.fillStyle = 'rgba('+aquaRGB+','+(rAlpha*0.9)+')'; ctx.fill();
     // Comet tail downward
     var sg2 = ctx.createLinearGradient(CX, beadY, CX, beadY + 28);
     sg2.addColorStop(0,   'rgba('+aquaRGB+','+(rAlpha*.88)+')');
@@ -1670,19 +1673,15 @@ function draw(){
     var aAlpha = aPhase < 0.06 ? aPhase/0.06
                : aPhase > 0.94 ? (1-aPhase)/0.06
                : 1.0;
-    aAlpha *= 0.72;
-    // Color: pure violet (0→0.5), fade violet→red (0.5→1)
+    aAlpha *= 0.48;
+    // Color: pure violet above midpoint, instant snap to red at midpoint (aPhase=0.5)
     var arc_r, arc_g, arc_b;
-    if(aPhase <= 0.5){
-      // Pure violet the entire top half
+    if(aPhase < 0.5){
+      // Violet above the equator
       arc_r = 155; arc_g = 114; arc_b = 207;
     } else {
-      // Gentle fade from violet to red in bottom half
-      var cf = (aPhase - 0.5) / 0.5;  // 0→1
-      cf = cf * cf; // ease in — slow start, accelerates near bottom
-      arc_r = Math.round(155 + (232-155)*cf);
-      arc_g = Math.round(114 + (80 -114)*cf);
-      arc_b = Math.round(207 + (80 -207)*cf);
+      // Immediate red once past the midpoint
+      arc_r = 232; arc_g = 80; arc_b = 80;
     }
     var arcRGB = arc_r+','+arc_g+','+arc_b;
 
@@ -1703,7 +1702,7 @@ function draw(){
       ctx.fillStyle = abg; ctx.fill();
       // Bright pinpoint
       ctx.beginPath(); ctx.arc(bx, by, 2.2, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba('+arcRGB+','+(aAlpha*1.5)+')';
+      ctx.fillStyle = 'rgba('+arcRGB+','+(aAlpha*1.0)+')';
       ctx.fill();
     });
   }
@@ -1890,16 +1889,19 @@ function addTyping(){
   d.innerHTML='<div class="msg-r">Temenos</div><div class="msg-t"><div class="typing"><span></span><span></span><span></span></div></div>';
   chatMsgs.appendChild(d);chatMsgs.scrollTop=chatMsgs.scrollHeight;return d;
 }
+async function aiChat(system,msgs,maxTok){
+  var sb=window._sb;
+  if(!sb) throw new Error('Not connected');
+  var resp=await sb.functions.invoke('ai-chat',{body:{system:system,messages:msgs,max_tokens:maxTok||1000}});
+  if(resp.error) throw new Error(resp.error.message||'AI request failed');
+  return resp.data;
+}
 async function send(text){
   if(!text.trim())return;
   addMsg(text,false);history.push({role:'user',content:text});
   var ty=addTyping();
   try{
-    var r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildSYS(),messages:history})
-    });
-    var d=await r.json();
+    var d=await aiChat(buildSYS(),history,1000);
     var rep=(d.content&&d.content[0]&&d.content[0].text)||'Something went quiet.';
     ty.remove();addMsg(rep,true);history.push({role:'assistant',content:rep});
     updateSuggestions();
@@ -1908,15 +1910,11 @@ async function send(text){
 
 async function updateSuggestions(){
   try{
-    var r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:200,
-        system:'You are generating 3 short follow-up question suggestions for a consciousness mapping app chat. Based on the conversation so far, return ONLY a JSON array of 3 short question strings (max 8 words each). No other text, no markdown.',
-        messages:[...history,{role:'user',content:'Suggest 3 short follow-up questions as a JSON array.'}]
-      })
-    });
-    var d=await r.json();
+    var d=await aiChat(
+      'You are generating 3 short follow-up question suggestions for a consciousness mapping app chat. Based on the conversation so far, return ONLY a JSON array of 3 short question strings (max 8 words each). No other text, no markdown.',
+      [...history,{role:'user',content:'Suggest 3 short follow-up questions as a JSON array.'}],
+      200
+    );
     var txt=(d.content&&d.content[0]&&d.content[0].text)||'';
     var clean=txt.replace(/```json|```/g,'').trim();
     var qs=JSON.parse(clean);
@@ -1929,18 +1927,13 @@ async function updateSuggestions(){
   }catch(e){/* keep existing suggestions */}
 }
 async function replaceSuggestion(btn){
-  // Fade out the clicked button
   btn.style.opacity='0.3';btn.style.pointerEvents='none';
   try{
-    var r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:80,
-        system:'You are generating a single short follow-up question for a consciousness mapping app chat. Based on the conversation, return ONLY one question string, max 9 words, no quotes, no punctuation at the end, no extra text.',
-        messages:[...history,{role:'user',content:'Give me one new short follow-up question I could ask.'}]
-      })
-    });
-    var d=await r.json();
+    var d=await aiChat(
+      'You are generating a single short follow-up question for a consciousness mapping app chat. Based on the conversation, return ONLY one question string, max 9 words, no quotes, no punctuation at the end, no extra text.',
+      [...history,{role:'user',content:'Give me one new short follow-up question I could ask.'}],
+      80
+    );
     var q=((d.content&&d.content[0]&&d.content[0].text)||'').replace(/^["']|["']$/g,'').trim();
     if(q){btn.textContent=q;btn.dataset.q=q;}
   }catch(e){/* keep existing */}
