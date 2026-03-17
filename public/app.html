@@ -2030,8 +2030,23 @@ document.getElementById('setting-stars').addEventListener('change', function(){
 document.getElementById('setting-cursor').addEventListener('change', function(){
   var dot  = document.getElementById('cdot');
   var ring = document.getElementById('cring');
-  if(dot)  dot.style.opacity  = this.checked ? '' : '0';
-  if(ring) ring.style.opacity = this.checked ? '' : '0';
+  if(this.checked){
+    if(dot)  dot.style.display  = '';
+    if(ring) ring.style.display = '';
+    document.documentElement.style.cursor = '';
+    document.body.style.cursor = '';
+    // Re-apply cursor:none via the injected stylesheet
+    var sheets = document.querySelectorAll('style');
+    sheets.forEach(function(s){ if(s.textContent.indexOf('cursor:none')!==-1) s.disabled = false; });
+  } else {
+    if(dot)  dot.style.display  = 'none';
+    if(ring) ring.style.display = 'none';
+    // Disable cursor:none stylesheets so the system cursor shows
+    var sheets = document.querySelectorAll('style');
+    sheets.forEach(function(s){ if(s.textContent.indexOf('cursor:none')!==-1) s.disabled = true; });
+    document.documentElement.style.cursor = 'auto';
+    document.body.style.cursor = 'auto';
+  }
 });
 
 // Support btn — placeholder
