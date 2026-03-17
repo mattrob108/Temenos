@@ -34,10 +34,32 @@ serve(async (req) => {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const userId = session.metadata?.user_id;
-    const systemId = session.metadata?.system_id;
 
-    if (userId && systemId) {
-      // Record the purchase
+    if (session.mode === "subscription" && userId) {
+      // Subscription checkout — upgrade to Initiate
+      const customerId =
+        typeof session.customer === "string"
+          ? session.customer
+          : session.customer?.id;
+
+      const subscriptionId =
+        typeof session.subscription === "string"
+          ? session.subscription
+          : session.subscription?.id;
+
+      await supabase
+        .from("profiles")
+        .update({
+          plan: "initiate",
+          stripe_customer_id: customerId || null,
+          stripe_subscription_id: subscriptionId || null,
+        })
+        .eq("id", userId);
+    }
+
+    const systemId = session.metadata?.system_id;
+    if (session.mode === "payment" && userId && systemId) {
+      // One-time system purchase
       await supabase.from("purchases").insert({
         user_id: userId,
         system_id: systemId,
@@ -49,17 +71,65 @@ serve(async (req) => {
       // Add the system to the user's unlocked list
       const { data: profile } = await supabase
         .from("profiles")
-        .select("systems_unlocked")
+        .select("systems_unlocked, plan")
         .eq("id", userId)
         .single();
 
       const current = profile?.systems_unlocked || [];
       if (!current.includes(systemId)) {
         current.push(systemId);
-        await supabase
-          .from("profiles")
-          .update({ systems_unlocked: current })
-          .eq("id", userId);
+        const ALL_PURCHASABLE = [
+          "enneagram",
+          "mbti",
+          "numerology",
+          "ifs",
+          "arch",
+          "custom",
+        ];
+        const hasAll = ALL_PURCHASABLE.every((id) => current.includes(id));
+        const updates: Record<string, unknown> = { systems_unlocked: current };
+        // Auto-upgrade to Proficient if all systems + custom node unlocked
+        if (hasAll && profile?.plan === "initiate") {
+          updates.plan = "proficient";
+        }
+        await supabase.from("profiles").update(updates).eq("id", userId);
+      }
+    }
+  }
+
+  // Handle subscription cancellation/expiry
+  if (
+    event.type === "customer.subscription.deleted" ||
+    event.type === "customer.subscription.updated"
+  ) {
+    const subscription = event.data.object as Stripe.Subscription;
+    const customerId =
+      typeof subscription.customer === "string"
+        ? subscription.customer
+        : subscription.customer?.id;
+
+    if (customerId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, plan")
+        .eq("stripe_customer_id", customerId)
+        .single();
+
+      if (profile) {
+        if (
+          event.type === "customer.subscription.deleted" ||
+          (event.type === "customer.subscription.updated" &&
+            subscription.status !== "active" &&
+            subscription.status !== "trialing")
+        ) {
+          // Downgrade to explorer if subscription is no longer active
+          if (profile.plan === "initiate") {
+            await supabase
+              .from("profiles")
+              .update({ plan: "explorer", stripe_subscription_id: null })
+              .eq("id", profile.id);
+          }
+        }
       }
     }
   }

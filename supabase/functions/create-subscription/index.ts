@@ -6,8 +6,6 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
   apiVersion: "2023-10-16",
 });
 
-const PRICE_CENTS = 1000; // $10.00
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -15,13 +13,11 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    // Verify auth
     const authHeader = req.headers.get("Authorization")!;
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -39,28 +35,16 @@ serve(async (req) => {
       });
     }
 
-    const { system_id, system_name } = await req.json();
-    if (!system_id || !system_name) {
-      return new Response(
-        JSON.stringify({ error: "system_id and system_name are required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Check if user already owns this system
+    // Check if user already has an active subscription
     const { data: profile } = await supabase
       .from("profiles")
-      .select("systems_unlocked")
+      .select("plan, stripe_customer_id")
       .eq("id", user.id)
       .single();
 
-    const unlocked = profile?.systems_unlocked || [];
-    if (unlocked.includes(system_id)) {
+    if (profile?.plan === "initiate" || profile?.plan === "proficient") {
       return new Response(
-        JSON.stringify({ error: "You already own this system" }),
+        JSON.stringify({ error: "You already have an active subscription" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -68,33 +52,50 @@ serve(async (req) => {
       );
     }
 
-    // Determine the origin for redirect URLs
     const origin =
-      req.headers.get("origin") || req.headers.get("referer")?.replace(/\/[^/]*$/, "") || "http://localhost:3000";
+      req.headers.get("origin") ||
+      req.headers.get("referer")?.replace(/\/[^/]*$/, "") ||
+      "http://localhost:3000";
 
-    // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    // Look up or reference the Stripe Price for Initiate ($12/month)
+    const priceId = Deno.env.get("STRIPE_INITIATE_PRICE_ID");
+    if (!priceId) {
+      return new Response(
+        JSON.stringify({ error: "Subscription price not configured" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Build checkout session params
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
-      mode: "payment",
-      customer_email: user.email,
+      mode: "subscription",
       client_reference_id: user.id,
       metadata: {
         user_id: user.id,
-        system_id: system_id,
+        plan: "initiate",
       },
       line_items: [
         {
-          price_data: {
-            currency: "usd",
-            unit_amount: PRICE_CENTS,
-            product: Deno.env.get("STRIPE_PRODUCT_ID") || "prod_UA7vqnlbzXaMdW",
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
-      success_url: `${origin}/app.html?purchase=success`,
+      success_url: `${origin}/app.html?subscription=success`,
       cancel_url: `${origin}/app.html`,
-    });
+    };
+
+    // Reuse existing Stripe customer if we have one
+    if (profile?.stripe_customer_id) {
+      sessionParams.customer = profile.stripe_customer_id;
+    } else {
+      sessionParams.customer_email = user.email;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return new Response(JSON.stringify({ sessionId: session.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
