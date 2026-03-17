@@ -463,7 +463,38 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 
         <div style="height:1px;background:rgba(255,255,255,.07);margin:22px 0 18px;"></div>
         <div id="ob-error" style="color:var(--ember);font-size:.62rem;margin-bottom:12px;display:none;"></div>
-        <button id="ob-submit" style="width:100%;padding:12px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.32);color:var(--gold);font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;border-radius:4px;transition:background .2s;">Enter My Sphere</button>
+        <button id="ob-submit" style="width:100%;padding:12px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.32);color:var(--gold);font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;border-radius:4px;transition:background .2s;">Submit</button>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 4: Disclaimer (shown while sphere generates) ── -->
+    <div id="screen-disclaimer" style="display:none;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;letter-spacing:.38em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Temenos</div>
+        <div style="font-size:.56rem;letter-spacing:.26em;text-transform:uppercase;color:var(--teal);">Preparing your sphere</div>
+      </div>
+      <div style="background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.09);border-radius:10px;backdrop-filter:blur(28px);padding:32px;">
+        <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(155,114,207,.6),transparent);margin:-32px -32px 28px;border-radius:10px 10px 0 0;"></div>
+
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:var(--text);margin-bottom:16px;text-align:center;">A Note Before You Enter</div>
+
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.88rem;line-height:1.85;color:rgba(232,228,220,.72);display:flex;flex-direction:column;gap:14px;">
+          <p>Temenos draws from ancient and modern systems of self-knowledge — astrology, human design, personality frameworks, and more — to create a living map of your inner world.</p>
+          <p>These systems offer <em style="color:var(--text);font-style:italic;">lenses</em>, not labels. They are tools for reflection, not fixed truths. Your sphere is a mirror, not a verdict.</p>
+          <p>What you discover here is meant to illuminate patterns, open questions, and invite deeper self-awareness. It is not a substitute for professional guidance in matters of mental health, medical decisions, or life crises.</p>
+          <p style="color:var(--gold);font-style:italic;">Use what resonates. Release what doesn't. Trust yourself above all.</p>
+        </div>
+
+        <div style="height:1px;background:rgba(255,255,255,.07);margin:22px 0 18px;"></div>
+
+        <div id="sphere-gen-status" style="text-align:center;margin-bottom:16px;">
+          <div style="font-size:.5rem;letter-spacing:.28em;text-transform:uppercase;color:var(--violet);margin-bottom:8px;" id="gen-status-text">Generating your sphere...</div>
+          <div style="width:100%;height:2px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;">
+            <div id="gen-progress" style="width:0%;height:100%;background:linear-gradient(90deg,var(--violet),var(--teal));border-radius:1px;transition:width .4s ease;"></div>
+          </div>
+        </div>
+
+        <button id="enter-sphere-btn" disabled style="width:100%;padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:rgba(232,228,220,.25);font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;border-radius:4px;transition:all .5s ease;">Enter Your Sphere</button>
       </div>
     </div>
 
@@ -506,21 +537,24 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   for(var i=0;i<180;i++){ax.beginPath();ax.arc(Math.random()*ac.width,Math.random()*ac.height,Math.random()*.7+.1,0,Math.PI*2);ax.fillStyle='rgba(232,228,220,'+(Math.random()*.28+.04)+')';ax.fill();}
 
   var gate        = document.getElementById('auth-gate');
-  var scrSignin   = document.getElementById('screen-signin');
-  var scrCheck    = document.getElementById('screen-check-email');
-  var scrOnboard  = document.getElementById('screen-onboard');
-  var signinEmail = document.getElementById('signin-email');
-  var signinBtn   = document.getElementById('signin-btn');
-  var signinErr   = document.getElementById('signin-error');
-  var checkAddr   = document.getElementById('check-email-addr');
-  var resendBtn   = document.getElementById('resend-btn');
-  var obSubmit    = document.getElementById('ob-submit');
-  var obError     = document.getElementById('ob-error');
+  var scrSignin     = document.getElementById('screen-signin');
+  var scrCheck      = document.getElementById('screen-check-email');
+  var scrOnboard    = document.getElementById('screen-onboard');
+  var scrDisclaimer = document.getElementById('screen-disclaimer');
+  var signinEmail   = document.getElementById('signin-email');
+  var signinBtn     = document.getElementById('signin-btn');
+  var signinErr     = document.getElementById('signin-error');
+  var checkAddr     = document.getElementById('check-email-addr');
+  var resendBtn     = document.getElementById('resend-btn');
+  var obSubmit      = document.getElementById('ob-submit');
+  var obError       = document.getElementById('ob-error');
+  var enterSphereBtn = document.getElementById('enter-sphere-btn');
 
   function showScreen(name){
-    scrSignin.style.display  = name==='signin'  ? '' : 'none';
-    scrCheck.style.display   = name==='check'   ? '' : 'none';
-    scrOnboard.style.display = name==='onboard' ? '' : 'none';
+    scrSignin.style.display     = name==='signin'     ? '' : 'none';
+    scrCheck.style.display      = name==='check'      ? '' : 'none';
+    scrOnboard.style.display    = name==='onboard'    ? '' : 'none';
+    scrDisclaimer.style.display = name==='disclaimer' ? '' : 'none';
   }
 
   function hideGate(){
@@ -727,6 +761,19 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     signinBtn.textContent = 'Send Magic Link'; signinBtn.disabled = false;
   });
 
+  // ── ENTER SPHERE (after disclaimer) ──
+  enterSphereBtn.addEventListener('click', function(){
+    if(enterSphereBtn.disabled) return;
+    hideGate();
+    // Show how-to popup for new users
+    setTimeout(function(){
+      var om = document.getElementById('onboard-modal');
+      var oc = document.getElementById('onboard-card');
+      om.style.opacity='1'; om.style.pointerEvents='auto';
+      oc.style.transform='scale(1) translateY(0)';
+    }, 600);
+  });
+
   // ── ONBOARDING SUBMIT ──
   obSubmit.addEventListener('click', function(){
     var name     = document.getElementById('ob-name').value.trim();
@@ -751,16 +798,33 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
         birthdate: bdate, birth_location: location, birth_time: btime,
         plan: 'explorer', systems_unlocked: '[]', trial_started_at: new Date().toISOString()
       }).then(function(ins){
-        if(ins.error){ showErr(obError, ins.error.message); obSubmit.textContent='Enter My Sphere'; obSubmit.disabled=false; return; }
+        if(ins.error){ showErr(obError, ins.error.message); obSubmit.textContent='Submit'; obSubmit.disabled=false; return; }
         applyProfile({ name:name, email:email, birthdate:bdate, birth_location:location, birth_time:btime, plan:'free' });
-        hideGate();
-        // Show how-to popup for new users
+
+        // Show disclaimer screen with sphere generation progress
+        showScreen('disclaimer');
+        var progress = document.getElementById('gen-progress');
+        var statusText = document.getElementById('gen-status-text');
+        var steps = [
+          { pct: 15, delay: 400 },
+          { pct: 35, delay: 900 },
+          { pct: 55, delay: 1500 },
+          { pct: 75, delay: 2200 },
+          { pct: 90, delay: 3000 },
+          { pct: 100, delay: 3800 }
+        ];
+        steps.forEach(function(s){
+          setTimeout(function(){ progress.style.width = s.pct + '%'; }, s.delay);
+        });
+        // Enable Enter Sphere button when generation completes
         setTimeout(function(){
-          var om = document.getElementById('onboard-modal');
-          var oc = document.getElementById('onboard-card');
-          om.style.opacity='1'; om.style.pointerEvents='auto';
-          oc.style.transform='scale(1) translateY(0)';
-        }, 600);
+          statusText.textContent = 'Your sphere is ready';
+          statusText.style.color = 'var(--teal)';
+          enterSphereBtn.disabled = false;
+          enterSphereBtn.style.background = 'rgba(201,169,110,.1)';
+          enterSphereBtn.style.borderColor = 'rgba(201,169,110,.32)';
+          enterSphereBtn.style.color = 'var(--gold)';
+        }, 4200);
       });
     });
   });

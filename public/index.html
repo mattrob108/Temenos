@@ -672,7 +672,7 @@
 
       // Auto-rotate when not dragging, apply momentum on release
       if (!isDragging) {
-        angleY -= 0.004;
+        angleY += 0.004;
         // Dampen momentum
         velX *= 0.92; velY *= 0.92;
         angleX += velX * 0.3;
