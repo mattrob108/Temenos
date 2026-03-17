@@ -532,7 +532,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   }
 
   // ── TIER HELPERS ──
-  var ALL_PURCHASABLE = ['enneagram','mbti','numerology','ifs','arch','custom'];
+  var ALL_PURCHASABLE = ['enn','mbti','num','ifs','arch','custom'];
 
   function getTrialDaysLeft(profile){
     if(!profile.trial_started_at) return 0;
@@ -604,7 +604,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     if(settingsPlanDesc){
       var planDescs = {
         explorer: getTrialDaysLeft(profile) > 0 ? '7-day free trial · ' + getTrialDaysLeft(profile) + ' days remaining' : 'Trial ended · Upgrade to continue',
-        initiate: '$12/month · Purchase systems at $10 each',
+        initiate: '$12/month · Purchase systems at $9.99 each',
         proficient: 'All systems unlocked · Full access'
       };
       settingsPlanDesc.textContent = planDescs[profile.plan] || '';
@@ -641,7 +641,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
       +'<div style="font-size:.68rem;color:var(--muted);line-height:1.9;">'
       +'<div>Your personal sphere + all birth systems</div>'
       +'<div>AI companion — unlimited conversations</div>'
-      +'<div>Purchase additional systems at $10 each</div>'
+      +'<div>Purchase additional systems at $9.99 each</div>'
       +'<div>Unlock all systems + custom node to reach Proficient status</div>'
       +'</div></div>'
       +'<button id="paywall-upgrade" style="width:100%;padding:14px;background:rgba(78,205,196,.12);border:1px solid rgba(78,205,196,.4);color:#4ecdc4;font-family:\'Syne\',sans-serif;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;border-radius:4px;transition:background .2s;margin-bottom:10px;">Unlock — $12/month</button>'
@@ -1871,7 +1871,7 @@ document.getElementById('support-btn').addEventListener('click', function(){
     +'<button id="shop-close" style="position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(232,228,220,.4);font-size:1rem;">✕</button>'
     +'<div style="font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;color:#4ecdc4;margin-bottom:4px;">Add a System</div>'
     +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:1.35rem;font-weight:300;color:var(--text);margin-bottom:6px;">Expand Your Sphere</div>'
-    +'<div style="font-size:.62rem;color:var(--muted);margin-bottom:22px;letter-spacing:.04em;">Each system adds a new node to your sphere &nbsp;·&nbsp; <span style="color:var(--gold);">$10 each</span></div>'
+    +'<div style="font-size:.62rem;color:var(--muted);margin-bottom:22px;letter-spacing:.04em;">Each system adds a new node to your sphere &nbsp;·&nbsp; <span style="color:var(--gold);">$9.99 each</span></div>'
     +'<div id="shop-items" style="display:flex;flex-direction:column;gap:8px;"></div>'
     +'<div style="margin-top:18px;font-size:.52rem;color:rgba(232,228,220,.28);letter-spacing:.06em;text-align:center;">Secure checkout powered by Stripe</div>'
     +'</div>';
@@ -1887,7 +1887,7 @@ document.getElementById('support-btn').addEventListener('click', function(){
     row.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+item.color+';box-shadow:0 0 8px '+item.color+';"></div>'
       +'<div style="flex:1;"><div style="font-size:.78rem;letter-spacing:.06em;color:var(--text);">'+item.name+'</div>'
       +'<div style="font-size:.6rem;color:var(--muted);margin-top:2px;">'+item.sub+'</div></div>'
-      +'<div style="font-size:.72rem;color:var(--gold);font-family:\'Cormorant Garamond\',serif;font-weight:300;margin-right:10px;">$10</div>'
+      +'<div style="font-size:.72rem;color:var(--gold);font-family:\'Cormorant Garamond\',serif;font-weight:300;margin-right:10px;">$9.99</div>'
       +'<button class="shop-add-btn" style="padding:6px 14px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.3);color:#4ecdc4;font-family:\'Syne\',sans-serif;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;white-space:nowrap;">Add</button>';
     row.addEventListener('mouseenter', function(){ row.style.background='rgba(255,255,255,.05)'; row.style.borderColor='rgba(255,255,255,.12)'; });
     row.addEventListener('mouseleave', function(){ row.style.background='rgba(255,255,255,.02)'; row.style.borderColor='rgba(255,255,255,.07)'; });
@@ -1905,6 +1905,12 @@ document.getElementById('support-btn').addEventListener('click', function(){
 
   function purchaseSystem(systemId, systemName, btn){
     var sb = window._sb;
+    var profile = window._userProfile || {};
+    // Only Initiates and Proficients can purchase systems
+    if(profile.plan !== 'initiate' && profile.plan !== 'proficient'){
+      alert('You need an Initiate subscription ($12/month) before purchasing additional systems.');
+      btn.textContent='Add'; btn.disabled=false; return;
+    }
     sb.auth.getSession().then(function(res){
       var session = res.data && res.data.session;
       if(!session){ alert('Please sign in first.'); btn.textContent='Add'; btn.disabled=false; return; }

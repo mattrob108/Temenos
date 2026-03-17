@@ -79,9 +79,9 @@ serve(async (req) => {
       if (!current.includes(systemId)) {
         current.push(systemId);
         const ALL_PURCHASABLE = [
-          "enneagram",
+          "enn",
           "mbti",
-          "numerology",
+          "num",
           "ifs",
           "arch",
           "custom",

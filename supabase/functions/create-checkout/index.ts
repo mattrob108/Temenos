@@ -6,7 +6,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
   apiVersion: "2023-10-16",
 });
 
-const PRICE_CENTS = 1000; // $10.00
+const PRICE_CENTS = 999; // $9.99
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -58,7 +58,8 @@ serve(async (req) => {
       .single();
 
     const unlocked = profile?.systems_unlocked || [];
-    if (unlocked.includes(system_id)) {
+    // Custom nodes can be purchased multiple times; other systems only once
+    if (system_id !== "custom" && unlocked.includes(system_id)) {
       return new Response(
         JSON.stringify({ error: "You already own this system" }),
         {
