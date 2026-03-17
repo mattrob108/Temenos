@@ -10,14 +10,19 @@ A premium spiritual self-discovery app featuring an interactive 3D sphere, AI co
    cd Temenos
    ```
 
-2. Copy environment variables:
+2. Set up config:
    ```bash
-   cp .env.example .env
+   cp public/js/config.example.js public/js/config.js
    ```
 
-3. Fill in your `.env` with real keys (Supabase, Stripe, etc.)
+3. Fill in `public/js/config.js` with your Supabase URL and anon key.
 
-4. Open `public/index.html` in a browser to see the landing page, or `public/app.html` for the main app.
+4. Serve the site:
+   ```bash
+   npx serve public
+   ```
+
+5. Open `http://localhost:3000` to see the landing page, or `/app.html` for the main app.
 
 > **Note**: This is currently a static site with no build step. Just open the HTML files directly or serve with any static server (e.g., `npx serve public`).
 
@@ -28,8 +33,11 @@ public/           Static HTML pages
   index.html      Marketing / landing page
   app.html        Main app (auth-gated)
   sphere.html     Sphere sandbox (no auth)
-supabase/         (coming soon) Migrations, edge functions
-.env.example      Environment variable template
+  js/
+    config.js       Runtime keys (gitignored)
+    config.example.js  Template for config.js
+supabase/         Database migrations, edge functions
+.env.example      Environment variable template (for future server-side use)
 CLAUDE.md         AI session context
 ```
 

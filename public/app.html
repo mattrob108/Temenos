@@ -6,7 +6,7 @@
 <title>Temenos — Your Sphere</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Syne:wght@300;400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -498,9 +498,8 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 // SUPABASE AUTH + ONBOARDING
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 (function(){
-  var SUPA_URL = 'https://isfdktgunaquujmvklcr.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzZmRrdGd1bmFxdXVqbXZrbGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMDk5NTcsImV4cCI6MjA4ODY4NTk1N30.oBKxnWzvKALntk2qP3rg0tSUuFVDlACzfL-upuVhYEo';
-  var sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+  var cfg = window.TEMENOS_CONFIG || {};
+  var sb = supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
 
   // Draw stars on auth gate canvas
   var ac = document.getElementById('auth-stars');

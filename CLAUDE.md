@@ -88,8 +88,11 @@ package.json    — Project metadata and scripts
 - Use IIFE patterns to avoid global scope pollution
 - Prioritize smooth animations and visual polish
 
+## Configuration
+- `public/js/config.js` holds runtime keys (SUPABASE_URL, SUPABASE_KEY) — gitignored
+- `public/js/config.example.js` is the committed template
+- app.html loads config.js via `<script>` and reads `window.TEMENOS_CONFIG`
+
 ## Important notes
 - The owner is a beginner developer — explain decisions clearly
 - sphere.html is a standalone sandbox copy of app.html with auth removed
-- Supabase anon key is currently hardcoded in app.html (needs to move to env vars)
-- The duplicate Supabase script tag in app.html (line 8-9) should be cleaned up
