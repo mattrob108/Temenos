@@ -68,8 +68,8 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   letter-spacing:.32em;text-transform:uppercase;color:var(--text);}
 .s-date{font-size:.52rem;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-top:3px;}
 #sphere-canvas{display:block;z-index:2;position:relative;}
-.s-hint{position:absolute;bottom:18px;font-size:.5rem;letter-spacing:.22em;
-  text-transform:uppercase;color:rgba(232,228,220,.15);pointer-events:none;text-align:center;z-index:4;}
+.s-hint{position:absolute;bottom:28px;font-size:.58rem;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(232,228,220,.55);pointer-events:none;text-align:center;z-index:4;}
 
 /* GLASSMORPHISM MODAL */
 .modal-overlay{
@@ -240,7 +240,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   <!-- SETTINGS MODAL -->
   <div id="settings-modal" style="position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;">
     <div id="settings-backdrop" style="position:absolute;inset:0;background:rgba(4,5,10,.5);backdrop-filter:blur(4px);"></div>
-    <div id="settings-card" style="position:relative;z-index:1;width:min(380px,82%);max-height:min(70vh,540px);background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.1);border-radius:12px;backdrop-filter:blur(32px);box-shadow:0 0 80px rgba(0,0,0,.7);padding:0;overflow:hidden;display:flex;flex-direction:column;transform:scale(.94) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);">
+    <div id="settings-card" style="position:relative;z-index:1;width:min(460px,90%);max-height:min(75vh,650px);background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.1);border-radius:12px;backdrop-filter:blur(32px);box-shadow:0 0 80px rgba(0,0,0,.7);padding:0;overflow:hidden;display:flex;flex-direction:column;transform:scale(.94) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);">
       <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.7),transparent);flex-shrink:0;"></div>
       <div style="padding:22px 24px 20px;overflow-y:auto;flex:1;">
         <button id="settings-close" style="position:sticky;float:right;top:0;right:0;background:rgba(8,12,24,.9);border:1px solid rgba(255,255,255,.12);color:rgba(232,228,220,.6);font-size:.85rem;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;cursor:pointer;transition:color .2s,border-color .2s;" onmouseover="this.style.color='var(--gold)';this.style.borderColor='rgba(201,169,110,.4)'" onmouseout="this.style.color='rgba(232,228,220,.6)';this.style.borderColor='rgba(255,255,255,.12)'">✕</button>
@@ -329,7 +329,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
       <div class="s-date" id="sphere-date"></div>
     </div>
     <canvas id="sphere-canvas" width="560" height="560"></canvas>
-    <div class="s-hint">hover to explore · click to enter</div>
+    <div class="s-hint">hover to pause · click to energy</div>
 
     <!-- GLASSMORPHISM MODAL -->
     <div class="modal-overlay" id="modal">
@@ -1590,13 +1590,13 @@ function draw(){
   //   Actually: largest when bead is at BOTTOM (just born / just arrived), smallest at TOP (just split).
   //   So glowR is max at cyclePos=0 (bottom), min at cyclePos=0.5 (top).
 
-  var torusT   = t * 0.018;
+  var torusT   = t * 0.009;
   var cyclePos = torusT % 1;    // 0→1 master, bead A phase
 
   var topY = CY - R;
   var botY = CY + R;
   var aquaRGB  = '78,205,196';   // pure aqua  — rising bead color
-  var violetRGB= '155,114,207';  // violet     — arc bead color at top
+  var violetRGB= '118,80,155';   // deeper violet — arc bead color at top
   var redRGB   = '232,80,80';    // red        — arc bead color at bottom
 
   // First-load gate: bead B only active once bead A has completed its first rise
@@ -1611,11 +1611,11 @@ function draw(){
   ctx.beginPath(); ctx.moveTo(CX, botY); ctx.lineTo(CX, topY);
   ctx.strokeStyle = chanFaint; ctx.lineWidth = 1.32; ctx.stroke();
 
-  // 2. TOP POLE HALO -- violet (always)
+  // 2. TOP POLE HALO -- deeper violet (always)
   var thg = ctx.createRadialGradient(CX, topY, 0, CX, topY, 36);
-  thg.addColorStop(0, 'rgba(155,114,207,.18)');
-  thg.addColorStop(0.5,'rgba(155,114,207,.08)');
-  thg.addColorStop(1,  'rgba(155,114,207,0)');
+  thg.addColorStop(0, 'rgba(118,80,155,.18)');
+  thg.addColorStop(0.5,'rgba(118,80,155,.08)');
+  thg.addColorStop(1,  'rgba(118,80,155,0)');
   ctx.beginPath(); ctx.arc(CX, topY, 36, 0, Math.PI*2);
   ctx.fillStyle = thg; ctx.fill();
 
@@ -1674,15 +1674,12 @@ function draw(){
                : aPhase > 0.94 ? (1-aPhase)/0.06
                : 1.0;
     aAlpha *= 0.48;
-    // Color: pure violet above midpoint, instant snap to red at midpoint (aPhase=0.5)
+    // Color: deeper violet above midpoint, smooth fade to red at midpoint (aPhase=0.5)
     var arc_r, arc_g, arc_b;
-    if(aPhase < 0.5){
-      // Violet above the equator
-      arc_r = 155; arc_g = 114; arc_b = 207;
-    } else {
-      // Immediate red once past the midpoint
-      arc_r = 232; arc_g = 80; arc_b = 80;
-    }
+    var midFade = Math.max(0, Math.min(1, (aPhase - 0.4) / 0.2)); // 0 at 0.4, 1 at 0.6
+    arc_r = Math.round(118 + (232 - 118) * midFade);
+    arc_g = Math.round(80 + (80 - 80) * midFade);
+    arc_b = Math.round(155 + (80 - 155) * midFade);
     var arcRGB = arc_r+','+arc_g+','+arc_b;
 
     [[-1, lbx, lby],[1, rbx, rby]].forEach(function(b){
