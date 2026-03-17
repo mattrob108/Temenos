@@ -6,6 +6,7 @@
 <title>Temenos — Your Sphere</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Syne:wght@300;400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://js.stripe.com/v3/"></script>
 <script src="js/config.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -1744,7 +1745,7 @@ document.getElementById('support-btn').addEventListener('click', function(){
     +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:1.35rem;font-weight:300;color:var(--text);margin-bottom:6px;">Expand Your Sphere</div>'
     +'<div style="font-size:.62rem;color:var(--muted);margin-bottom:22px;letter-spacing:.04em;">Each system adds a new node to your sphere &nbsp;·&nbsp; <span style="color:var(--gold);">$9.99 each</span></div>'
     +'<div id="shop-items" style="display:flex;flex-direction:column;gap:8px;"></div>'
-    +'<div style="margin-top:18px;font-size:.52rem;color:rgba(232,228,220,.28);letter-spacing:.06em;text-align:center;">Payment integration coming soon · Selections saved to your profile</div>'
+    +'<div style="margin-top:18px;font-size:.52rem;color:rgba(232,228,220,.28);letter-spacing:.06em;text-align:center;">Secure checkout powered by Stripe</div>'
     +'</div>';
 
   var itemsEl;
@@ -1763,13 +1764,54 @@ document.getElementById('support-btn').addEventListener('click', function(){
     row.addEventListener('mouseenter', function(){ row.style.background='rgba(255,255,255,.05)'; row.style.borderColor='rgba(255,255,255,.12)'; });
     row.addEventListener('mouseleave', function(){ row.style.background='rgba(255,255,255,.02)'; row.style.borderColor='rgba(255,255,255,.07)'; });
     row.querySelector('.shop-add-btn').addEventListener('click', function(){
-      this.textContent = 'Added \u2713';
-      this.style.background = 'rgba(78,205,196,.2)';
-      this.style.borderColor = 'rgba(78,205,196,.5)';
-      this.disabled = true;
+      var btn = this;
+      btn.textContent = 'Loading…';
+      btn.disabled = true;
+      purchaseSystem(item.id, item.name, btn);
     });
     itemsEl.appendChild(row);
   });
+
+  // ── Stripe Checkout ──
+  var stripe = window.Stripe(window.TEMENOS_CONFIG.STRIPE_PUBLIC_KEY);
+
+  function purchaseSystem(systemId, systemName, btn){
+    var sb = window._sb;
+    sb.auth.getSession().then(function(res){
+      var session = res.data && res.data.session;
+      if(!session){ alert('Please sign in first.'); btn.textContent='Add'; btn.disabled=false; return; }
+
+      sb.functions.invoke('create-checkout', {
+        body: { system_id: systemId, system_name: systemName }
+      }).then(function(resp){
+        if(resp.error || !resp.data || !resp.data.sessionId){
+          alert('Could not start checkout. Please try again.');
+          btn.textContent = 'Add'; btn.disabled = false;
+          return;
+        }
+        stripe.redirectToCheckout({ sessionId: resp.data.sessionId });
+      });
+    });
+  }
+
+  // Check URL for successful purchase return
+  (function(){
+    var params = new URLSearchParams(window.location.search);
+    if(params.get('purchase') === 'success'){
+      // Remove query param
+      window.history.replaceState({}, '', window.location.pathname);
+      // Refresh profile to pick up newly unlocked system
+      var sb = window._sb;
+      sb.auth.getSession().then(function(res){
+        if(res.data && res.data.session){
+          sb.from('profiles').select('systems_unlocked').eq('id', res.data.session.user.id).single()
+            .then(function(p){
+              if(p.data) window._userProfile.systems_unlocked = p.data.systems_unlocked;
+            });
+        }
+      });
+    }
+  })();
 
   function openShop(){ shopOverlay.style.opacity='1'; shopOverlay.style.pointerEvents='auto'; shopCard.style.transform='scale(1) translateY(0)'; }
   function closeShop(){ shopOverlay.style.opacity='0'; shopOverlay.style.pointerEvents='none'; shopCard.style.transform='scale(.94) translateY(8px)'; }
