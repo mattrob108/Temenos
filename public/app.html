@@ -20,10 +20,10 @@ html,body{height:100%;overflow:hidden;background:var(--void);color:var(--text);
 html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none!important;}
 #cdot{position:fixed;top:0;left:0;width:6px;height:6px;background:var(--gold);
   border-radius:50%;pointer-events:none;z-index:2147483647;will-change:transform;
-  opacity:0;transform:translate(-300px,-300px);}
+  transform:translate(-300px,-300px);}
 #cring{position:fixed;top:0;left:0;width:22px;height:22px;
   border:1px solid rgba(201,169,110,.5);border-radius:50%;pointer-events:none;
-  z-index:2147483646;will-change:transform;opacity:0;transform:translate(-300px,-300px);}
+  z-index:2147483646;will-change:transform;transform:translate(-300px,-300px);}
 .layout{display:grid;grid-template-columns:276px 1fr 368px;
   grid-template-rows:52px 1fr;height:100vh;position:relative;z-index:1;}
 .topbar{grid-column:1/-1;display:flex;align-items:center;padding:0 20px;
@@ -173,8 +173,6 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 </head>
 <body>
 
-<div id="cdot"></div>
-<div id="cring"></div>
 <canvas id="stars" style="position:fixed;inset:0;pointer-events:none;z-index:0;"></canvas>
 
 <div class="layout">
@@ -706,11 +704,15 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     if(!email || !email.includes('@')){ showErr(signinErr,'Please enter a valid email address.'); return; }
     signinBtn.textContent = 'Sending…'; signinBtn.disabled = true;
     signinErr.style.display = 'none';
-    sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true, emailRedirectTo: window.location.href } })
+    var redirectTo = window.location.origin + window.location.pathname;
+    sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true, emailRedirectTo: redirectTo } })
       .then(function(res){
         if(res.error){ showErr(signinErr, res.error.message); signinBtn.textContent='Send Magic Link'; signinBtn.disabled=false; return; }
         checkAddr.textContent = email;
         showScreen('check');
+      }).catch(function(err){
+        showErr(signinErr, err.message || 'Something went wrong. Please try again.');
+        signinBtn.textContent='Send Magic Link'; signinBtn.disabled=false;
       });
   }
 
@@ -809,11 +811,9 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 // ━━ CURSOR ━━
 (function(){
   var dot=document.getElementById('cdot'),ring=document.getElementById('cring');
-  var mx=-300,my=-300,rx=-300,ry=-300,alive=false;
+  var mx=-300,my=-300,rx=-300,ry=-300;
   var s=document.createElement('style');s.textContent='html,body,*{cursor:none!important;}';document.head.appendChild(s);
-  document.addEventListener('mouseover',function(e){if(e.target&&e.target.style)e.target.style.setProperty('cursor','none','important');},true);
-  document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;if(!alive){dot.style.opacity='1';ring.style.opacity='1';alive=true;}},{passive:true});
-  document.addEventListener('mousedown',function(){document.documentElement.style.setProperty('cursor','none','important');document.body.style.setProperty('cursor','none','important');});
+  document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;},{passive:true});
   (function loop(){dot.style.transform='translate('+mx+'px,'+my+'px) translate(-50%,-50%)';rx+=(mx-rx)*0.13;ry+=(my-ry)*0.13;ring.style.transform='translate('+rx+'px,'+ry+'px) translate(-50%,-50%)';requestAnimationFrame(loop);})();
 })();
 
@@ -2036,5 +2036,7 @@ document.getElementById('support-btn').addEventListener('click', function(){
   });
 })();
 </script>
+<div id="cdot"></div>
+<div id="cring"></div>
 </body>
 </html>
