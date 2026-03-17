@@ -2,7 +2,7 @@
 .env
 .env.local
 .env.production
-public/js/config.js
+# public/js/config.js contains only public keys (anon key, pk_test) — safe to commit
 
 # Dependencies
 node_modules/
