@@ -1,0 +1,13 @@
+{
+  "name": "temenos",
+  "version": "0.1.0",
+  "description": "Temenos — Your Inner Universe. A spiritual self-discovery app.",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve public",
+    "start": "npx serve public"
+  },
+  "keywords": ["spiritual", "self-discovery", "sphere", "wellness"],
+  "author": "Matt Robinson",
+  "license": "UNLICENSED"
+}
