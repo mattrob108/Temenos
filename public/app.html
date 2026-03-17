@@ -20,10 +20,10 @@ html,body{height:100%;overflow:hidden;background:var(--void);color:var(--text);
 html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none!important;}
 #cdot{position:fixed;top:0;left:0;width:6px;height:6px;background:var(--gold);
   border-radius:50%;pointer-events:none;z-index:2147483647;will-change:transform;
-  opacity:0;transform:translate(-300px,-300px);}
+  transform:translate(-300px,-300px);}
 #cring{position:fixed;top:0;left:0;width:22px;height:22px;
   border:1px solid rgba(201,169,110,.5);border-radius:50%;pointer-events:none;
-  z-index:2147483646;will-change:transform;opacity:0;transform:translate(-300px,-300px);}
+  z-index:2147483646;will-change:transform;transform:translate(-300px,-300px);}
 .layout{display:grid;grid-template-columns:276px 1fr 368px;
   grid-template-rows:52px 1fr;height:100vh;position:relative;z-index:1;}
 .topbar{grid-column:1/-1;display:flex;align-items:center;padding:0 20px;
@@ -173,8 +173,6 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 </head>
 <body>
 
-<div id="cdot"></div>
-<div id="cring"></div>
 <canvas id="stars" style="position:fixed;inset:0;pointer-events:none;z-index:0;"></canvas>
 
 <div class="layout">
@@ -242,10 +240,10 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   <!-- SETTINGS MODAL -->
   <div id="settings-modal" style="position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;">
     <div id="settings-backdrop" style="position:absolute;inset:0;background:rgba(4,5,10,.5);backdrop-filter:blur(4px);"></div>
-    <div id="settings-card" style="position:relative;z-index:1;width:min(460px,85%);background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.1);border-radius:12px;backdrop-filter:blur(32px);box-shadow:0 0 80px rgba(0,0,0,.7);padding:0;overflow:hidden;transform:scale(.94) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);">
-      <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.7),transparent);"></div>
-      <div style="padding:28px 28px 24px;">
-        <button id="settings-close" style="position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(232,228,220,.4);font-size:1rem;">✕</button>
+    <div id="settings-card" style="position:relative;z-index:1;width:min(380px,82%);max-height:min(70vh,540px);background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.1);border-radius:12px;backdrop-filter:blur(32px);box-shadow:0 0 80px rgba(0,0,0,.7);padding:0;overflow:hidden;display:flex;flex-direction:column;transform:scale(.94) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);">
+      <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.7),transparent);flex-shrink:0;"></div>
+      <div style="padding:22px 24px 20px;overflow-y:auto;flex:1;">
+        <button id="settings-close" style="position:sticky;float:right;top:0;right:0;background:rgba(8,12,24,.9);border:1px solid rgba(255,255,255,.12);color:rgba(232,228,220,.6);font-size:.85rem;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;cursor:pointer;transition:color .2s,border-color .2s;" onmouseover="this.style.color='var(--gold)';this.style.borderColor='rgba(201,169,110,.4)'" onmouseout="this.style.color='rgba(232,228,220,.6)';this.style.borderColor='rgba(255,255,255,.12)'">✕</button>
         <div style="font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Settings</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--text);margin-bottom:24px;">Preferences</div>
 
@@ -309,6 +307,18 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
           <button style="flex:1;padding:7px;background:transparent;border:1px solid rgba(255,255,255,.08);color:rgba(232,228,220,.38);font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='rgba(232,228,220,.7)';this.style.borderColor='rgba(255,255,255,.18)'" onmouseout="this.style.color='rgba(232,228,220,.38)';this.style.borderColor='rgba(255,255,255,.08)'">Manage Plan</button>
           <button style="flex:1;padding:7px;background:transparent;border:1px solid rgba(255,255,255,.08);color:rgba(232,228,220,.38);font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='rgba(232,228,220,.7)';this.style.borderColor='rgba(255,255,255,.18)'" onmouseout="this.style.color='rgba(232,228,220,.38)';this.style.borderColor='rgba(255,255,255,.08)'">Billing History</button>
         </div>
+
+        <div style="height:1px;background:rgba(255,255,255,.07);margin:20px 0 16px;"></div>
+        <div style="font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Suggestion Box</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.78rem;color:rgba(232,228,220,.5);line-height:1.6;margin-bottom:10px;">Help shape Temenos. Share ideas, report issues, or tell us what you'd love to see.</div>
+        <textarea id="suggestion-text" placeholder="What's on your mind?" style="width:100%;height:72px;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.72rem;resize:none;outline:none;transition:border-color .2s;line-height:1.6;" onfocus="this.style.borderColor='rgba(155,114,207,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"></textarea>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+          <button id="suggestion-send" style="padding:8px 20px;background:rgba(155,114,207,.1);border:1px solid rgba(155,114,207,.3);color:var(--violet);font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;border-radius:3px;transition:background .2s;" onmouseover="this.style.background='rgba(155,114,207,.18)'" onmouseout="this.style.background='rgba(155,114,207,.1)'">Send</button>
+          <span id="suggestion-status" style="font-size:.56rem;color:var(--teal);opacity:0;transition:opacity .3s;"></span>
+        </div>
+
+        <div style="height:1px;background:rgba(255,255,255,.07);margin:20px 0 16px;"></div>
+        <button id="signout-btn" style="width:100%;padding:10px;background:transparent;border:1px solid rgba(232,112,90,.2);color:var(--ember);font-family:'Syne',sans-serif;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;border-radius:3px;transition:background .2s,border-color .2s;" onmouseover="this.style.background='rgba(232,112,90,.08)';this.style.borderColor='rgba(232,112,90,.35)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(232,112,90,.2)'">Sign Out</button>
       </div>
     </div>
   </div>
@@ -361,7 +371,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     <div class="companion-section">
       <div class="ch" style="padding:10px 14px 8px;display:flex;align-items:center;">
         <div><div class="cht">Your Companion AI</div><div class="chs">Ask anything about your map</div></div>
-        <button id="hist-btn" title="Chat History" style="margin-left:auto;background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.22);color:#4ecdc4;font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;padding:5px 9px;border-radius:3px;flex-shrink:0;">History</button>
+        <button id="hist-btn" title="Save or view chat history" style="margin-left:auto;background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.22);color:#4ecdc4;font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;padding:5px 9px;border-radius:3px;flex-shrink:0;">Save/History</button>
       </div>
       <div class="chat-sugg" id="chat-sugg">
         <button class="sqbtn" data-q="Looking at my sphere for the first time — what do these five systems have in common when it comes to my specific chart?">What do my five systems share?</button>
@@ -415,7 +425,24 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
         <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.6),transparent);margin:-32px -32px 28px;border-radius:10px 10px 0 0;"></div>
         <div style="font-size:.5rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Welcome</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--text);margin-bottom:4px;">Enter your sphere</div>
-        <div style="font-size:.62rem;color:var(--muted);line-height:1.7;margin-bottom:24px;">We'll send a magic link to your email — no password needed.</div>
+        <div style="font-size:.62rem;color:var(--muted);line-height:1.7;margin-bottom:24px;">Sign in to access your personal consciousness map.</div>
+
+        <!-- Social auth buttons -->
+        <button id="google-signin-btn" style="width:100%;padding:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--text);font-family:'Syne',sans-serif;font-size:.64rem;letter-spacing:.08em;border-radius:4px;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <button id="apple-signin-btn" disabled style="width:100%;padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);color:rgba(232,228,220,.25);font-family:'Syne',sans-serif;font-size:.64rem;letter-spacing:.08em;border-radius:4px;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(232,228,220,.25)"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          Continue with Apple <span style="font-size:.44rem;color:rgba(232,228,220,.2);margin-left:2px;">(coming soon)</span>
+        </button>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="flex:1;height:1px;background:rgba(255,255,255,.08);"></div>
+          <span style="font-size:.46rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(232,228,220,.25);">or</span>
+          <div style="flex:1;height:1px;background:rgba(255,255,255,.08);"></div>
+        </div>
+
         <input id="signin-email" type="email" placeholder="your@email.com" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.78rem;margin-bottom:12px;outline:none;transition:border-color .2s;" />
         <button id="signin-btn" style="width:100%;padding:12px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.32);color:var(--gold);font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;border-radius:4px;transition:background .2s;">Send Magic Link</button>
         <div id="signin-error" style="color:var(--ember);font-size:.62rem;margin-top:10px;display:none;"></div>
@@ -452,9 +479,12 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
             <label style="font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;">Date of Birth <span style="color:var(--ember);">*</span></label>
             <input id="ob-birthdate" type="date" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.78rem;outline:none;transition:border-color .2s;color-scheme:dark;" />
           </div>
-          <div>
+          <div style="position:relative;">
             <label style="font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;">Place of Birth <span style="color:var(--ember);">*</span></label>
-            <input id="ob-location" type="text" placeholder="City, Country" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.78rem;outline:none;transition:border-color .2s;" />
+            <input id="ob-location" type="text" placeholder="Start typing a city..." autocomplete="off" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.78rem;outline:none;transition:border-color .2s;" />
+            <div id="ob-location-results" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:10;margin-top:2px;background:rgba(8,12,24,.96);border:1px solid rgba(255,255,255,.12);border-radius:4px;max-height:180px;overflow-y:auto;"></div>
+            <input type="hidden" id="ob-lat" />
+            <input type="hidden" id="ob-lng" />
           </div>
           <div>
             <label style="font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;">Time of Birth <span style="color:rgba(232,228,220,.3);">(optional)</span></label>
@@ -465,7 +495,38 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 
         <div style="height:1px;background:rgba(255,255,255,.07);margin:22px 0 18px;"></div>
         <div id="ob-error" style="color:var(--ember);font-size:.62rem;margin-bottom:12px;display:none;"></div>
-        <button id="ob-submit" style="width:100%;padding:12px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.32);color:var(--gold);font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;border-radius:4px;transition:background .2s;">Enter My Sphere</button>
+        <button id="ob-submit" style="width:100%;padding:12px;background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.32);color:var(--gold);font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;border-radius:4px;transition:background .2s;">Submit</button>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 4: Disclaimer (shown while sphere generates) ── -->
+    <div id="screen-disclaimer" style="display:none;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;letter-spacing:.38em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Temenos</div>
+        <div style="font-size:.56rem;letter-spacing:.26em;text-transform:uppercase;color:var(--teal);">Preparing your sphere</div>
+      </div>
+      <div style="background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.09);border-radius:10px;backdrop-filter:blur(28px);padding:32px;">
+        <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(155,114,207,.6),transparent);margin:-32px -32px 28px;border-radius:10px 10px 0 0;"></div>
+
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:var(--text);margin-bottom:16px;text-align:center;">A Note Before You Enter</div>
+
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.88rem;line-height:1.85;color:rgba(232,228,220,.72);display:flex;flex-direction:column;gap:14px;">
+          <p>Temenos draws from ancient and modern systems of self-knowledge — astrology, human design, personality frameworks, and more — to create a living map of your inner world.</p>
+          <p>These systems offer <em style="color:var(--text);font-style:italic;">lenses</em>, not labels. They are tools for reflection, not fixed truths. Your sphere is a mirror, not a verdict.</p>
+          <p>What you discover here is meant to illuminate patterns, open questions, and invite deeper self-awareness. It is not a substitute for professional guidance in matters of mental health, medical decisions, or life crises.</p>
+          <p style="color:var(--gold);font-style:italic;">Use what resonates. Release what doesn't. Trust yourself above all.</p>
+        </div>
+
+        <div style="height:1px;background:rgba(255,255,255,.07);margin:22px 0 18px;"></div>
+
+        <div id="sphere-gen-status" style="text-align:center;margin-bottom:16px;">
+          <div style="font-size:.5rem;letter-spacing:.28em;text-transform:uppercase;color:var(--violet);margin-bottom:8px;" id="gen-status-text">Generating your sphere...</div>
+          <div style="width:100%;height:2px;background:rgba(255,255,255,.06);border-radius:1px;overflow:hidden;">
+            <div id="gen-progress" style="width:0%;height:100%;background:linear-gradient(90deg,var(--violet),var(--teal));border-radius:1px;transition:width .4s ease;"></div>
+          </div>
+        </div>
+
+        <button id="enter-sphere-btn" disabled style="width:100%;padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:rgba(232,228,220,.25);font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;border-radius:4px;transition:all .5s ease;">Enter Your Sphere</button>
       </div>
     </div>
 
@@ -508,21 +569,24 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   for(var i=0;i<180;i++){ax.beginPath();ax.arc(Math.random()*ac.width,Math.random()*ac.height,Math.random()*.7+.1,0,Math.PI*2);ax.fillStyle='rgba(232,228,220,'+(Math.random()*.28+.04)+')';ax.fill();}
 
   var gate        = document.getElementById('auth-gate');
-  var scrSignin   = document.getElementById('screen-signin');
-  var scrCheck    = document.getElementById('screen-check-email');
-  var scrOnboard  = document.getElementById('screen-onboard');
-  var signinEmail = document.getElementById('signin-email');
-  var signinBtn   = document.getElementById('signin-btn');
-  var signinErr   = document.getElementById('signin-error');
-  var checkAddr   = document.getElementById('check-email-addr');
-  var resendBtn   = document.getElementById('resend-btn');
-  var obSubmit    = document.getElementById('ob-submit');
-  var obError     = document.getElementById('ob-error');
+  var scrSignin     = document.getElementById('screen-signin');
+  var scrCheck      = document.getElementById('screen-check-email');
+  var scrOnboard    = document.getElementById('screen-onboard');
+  var scrDisclaimer = document.getElementById('screen-disclaimer');
+  var signinEmail   = document.getElementById('signin-email');
+  var signinBtn     = document.getElementById('signin-btn');
+  var signinErr     = document.getElementById('signin-error');
+  var checkAddr     = document.getElementById('check-email-addr');
+  var resendBtn     = document.getElementById('resend-btn');
+  var obSubmit      = document.getElementById('ob-submit');
+  var obError       = document.getElementById('ob-error');
+  var enterSphereBtn = document.getElementById('enter-sphere-btn');
 
   function showScreen(name){
-    scrSignin.style.display  = name==='signin'  ? '' : 'none';
-    scrCheck.style.display   = name==='check'   ? '' : 'none';
-    scrOnboard.style.display = name==='onboard' ? '' : 'none';
+    scrSignin.style.display     = name==='signin'     ? '' : 'none';
+    scrCheck.style.display      = name==='check'      ? '' : 'none';
+    scrOnboard.style.display    = name==='onboard'    ? '' : 'none';
+    scrDisclaimer.style.display = name==='disclaimer' ? '' : 'none';
   }
 
   function hideGate(){
@@ -695,7 +759,23 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     return h + ':' + m + ' ' + ampm;
   }
 
-  // ── SIGN IN ──
+  // ── SOCIAL AUTH ──
+  document.getElementById('google-signin-btn').addEventListener('click', function(){
+    var redirectTo = window.location.origin + window.location.pathname;
+    sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: redirectTo } });
+  });
+
+  document.getElementById('apple-signin-btn').addEventListener('click', function(){
+    var redirectTo = window.location.origin + window.location.pathname;
+    sb.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: redirectTo } });
+  });
+
+  // ── SIGN OUT ──
+  document.getElementById('signout-btn').addEventListener('click', function(){
+    sb.auth.signOut().then(function(){ window.location.reload(); });
+  });
+
+  // ── SIGN IN (Magic Link) ──
   signinBtn.addEventListener('click', function(){ sendMagicLink(); });
   signinEmail.addEventListener('keydown', function(e){ if(e.key==='Enter') sendMagicLink(); });
   signinEmail.addEventListener('focus', function(){ this.style.borderColor='rgba(201,169,110,.45)'; });
@@ -706,17 +786,40 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     if(!email || !email.includes('@')){ showErr(signinErr,'Please enter a valid email address.'); return; }
     signinBtn.textContent = 'Sending…'; signinBtn.disabled = true;
     signinErr.style.display = 'none';
-    sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true, emailRedirectTo: window.location.href } })
+    var redirectTo = window.location.origin + window.location.pathname;
+    sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true, emailRedirectTo: redirectTo } })
       .then(function(res){
-        if(res.error){ showErr(signinErr, res.error.message); signinBtn.textContent='Send Magic Link'; signinBtn.disabled=false; return; }
+        if(res.error){
+          console.error('Supabase OTP error:', res.error);
+          showErr(signinErr, res.error.message);
+          signinBtn.textContent='Send Magic Link'; signinBtn.disabled=false;
+          return;
+        }
         checkAddr.textContent = email;
         showScreen('check');
+      }).catch(function(err){
+        console.error('sendMagicLink catch:', err);
+        showErr(signinErr, err.message || 'Something went wrong. Please try again.');
+        signinBtn.textContent='Send Magic Link'; signinBtn.disabled=false;
       });
   }
 
   resendBtn.addEventListener('click', function(){
     showScreen('signin');
     signinBtn.textContent = 'Send Magic Link'; signinBtn.disabled = false;
+  });
+
+  // ── ENTER SPHERE (after disclaimer) ──
+  enterSphereBtn.addEventListener('click', function(){
+    if(enterSphereBtn.disabled) return;
+    hideGate();
+    // Show how-to popup for new users
+    setTimeout(function(){
+      var om = document.getElementById('onboard-modal');
+      var oc = document.getElementById('onboard-card');
+      om.style.opacity='1'; om.style.pointerEvents='auto';
+      oc.style.transform='scale(1) translateY(0)';
+    }, 600);
   });
 
   // ── ONBOARDING SUBMIT ──
@@ -729,6 +832,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     if(!name)     { showErr(obError,'Please enter your name.'); return; }
     if(!bdate)    { showErr(obError,'Please enter your date of birth.'); return; }
     if(!location) { showErr(obError,'Please enter your place of birth.'); return; }
+    if(!window._isLocationSelected()){ showErr(obError,'Please select a city from the dropdown suggestions.'); return; }
 
     obError.style.display = 'none';
     obSubmit.textContent = 'Building your sphere…'; obSubmit.disabled = true;
@@ -738,21 +842,50 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
       var uid   = res.data.user.id;
       var email = res.data.user.email;
 
+      var lat = parseFloat(document.getElementById('ob-lat').value) || null;
+      var lng = parseFloat(document.getElementById('ob-lng').value) || null;
+
+      // Insert with base columns only (guaranteed to exist)
       sb.from('profiles').insert({
         id: uid, name: name, email: email,
         birthdate: bdate, birth_location: location, birth_time: btime,
-        plan: 'explorer', systems_unlocked: '[]', trial_started_at: new Date().toISOString()
+        plan: 'explorer', systems_unlocked: '[]'
       }).then(function(ins){
-        if(ins.error){ showErr(obError, ins.error.message); obSubmit.textContent='Enter My Sphere'; obSubmit.disabled=false; return; }
-        applyProfile({ name:name, email:email, birthdate:bdate, birth_location:location, birth_time:btime, plan:'free' });
-        hideGate();
-        // Show how-to popup for new users
+        if(ins.error){ showErr(obError, ins.error.message); obSubmit.textContent='Submit'; obSubmit.disabled=false; return; }
+
+        // Try to update optional columns (from later migrations) — silently ignore if columns don't exist yet
+        var extras = {};
+        if(lat !== null) extras.birth_lat = lat;
+        if(lng !== null) extras.birth_lng = lng;
+        extras.trial_started_at = new Date().toISOString();
+        sb.from('profiles').update(extras).eq('id', uid).then(function(){}).catch(function(){});
+
+        applyProfile({ name:name, email:email, birthdate:bdate, birth_location:location, birth_time:btime, plan:'explorer' });
+
+        // Show disclaimer screen with sphere generation progress
+        showScreen('disclaimer');
+        var progress = document.getElementById('gen-progress');
+        var statusText = document.getElementById('gen-status-text');
+        var steps = [
+          { pct: 15, delay: 400 },
+          { pct: 35, delay: 900 },
+          { pct: 55, delay: 1500 },
+          { pct: 75, delay: 2200 },
+          { pct: 90, delay: 3000 },
+          { pct: 100, delay: 3800 }
+        ];
+        steps.forEach(function(s){
+          setTimeout(function(){ progress.style.width = s.pct + '%'; }, s.delay);
+        });
+        // Enable Enter Sphere button when generation completes
         setTimeout(function(){
-          var om = document.getElementById('onboard-modal');
-          var oc = document.getElementById('onboard-card');
-          om.style.opacity='1'; om.style.pointerEvents='auto';
-          oc.style.transform='scale(1) translateY(0)';
-        }, 600);
+          statusText.textContent = 'Your sphere is ready';
+          statusText.style.color = 'var(--teal)';
+          enterSphereBtn.disabled = false;
+          enterSphereBtn.style.background = 'rgba(201,169,110,.1)';
+          enterSphereBtn.style.borderColor = 'rgba(201,169,110,.32)';
+          enterSphereBtn.style.color = 'var(--gold)';
+        }, 4200);
       });
     });
   });
@@ -764,6 +897,59 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     el.addEventListener('focus', function(){ this.style.borderColor='rgba(201,169,110,.45)'; });
     el.addEventListener('blur',  function(){ this.style.borderColor='rgba(255,255,255,.1)'; });
   });
+
+  // ── LOCATION AUTOCOMPLETE (Open-Meteo Geocoding API — free, no key) ──
+  (function(){
+    var locInput = document.getElementById('ob-location');
+    var results  = document.getElementById('ob-location-results');
+    var latField = document.getElementById('ob-lat');
+    var lngField = document.getElementById('ob-lng');
+    var debounce = null;
+    var locationSelected = false;
+
+    locInput.addEventListener('input', function(){
+      locationSelected = false;
+      latField.value = ''; lngField.value = '';
+      var q = locInput.value.trim();
+      if(q.length < 2){ results.style.display='none'; return; }
+      clearTimeout(debounce);
+      debounce = setTimeout(function(){
+        fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=6&language=en&format=json')
+          .then(function(r){ return r.json(); })
+          .then(function(data){
+            if(!data.results || !data.results.length){ results.style.display='none'; return; }
+            results.innerHTML = '';
+            data.results.forEach(function(city){
+              var label = city.name;
+              if(city.admin1) label += ', ' + city.admin1;
+              if(city.country) label += ', ' + city.country;
+              var opt = document.createElement('div');
+              opt.textContent = label;
+              opt.style.cssText = 'padding:9px 14px;font-size:.76rem;color:var(--text);font-family:"Syne",sans-serif;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.05);';
+              opt.addEventListener('mouseenter', function(){ opt.style.background='rgba(201,169,110,.1)'; });
+              opt.addEventListener('mouseleave', function(){ opt.style.background='transparent'; });
+              opt.addEventListener('mousedown', function(e){
+                e.preventDefault();
+                locInput.value = label;
+                latField.value = city.latitude;
+                lngField.value = city.longitude;
+                locationSelected = true;
+                results.style.display = 'none';
+              });
+              results.appendChild(opt);
+            });
+            results.style.display = 'block';
+          }).catch(function(){ results.style.display='none'; });
+      }, 300);
+    });
+
+    locInput.addEventListener('blur', function(){
+      setTimeout(function(){ results.style.display='none'; }, 200);
+    });
+
+    // Expose for validation in submit handler
+    window._isLocationSelected = function(){ return locationSelected; };
+  })();
 
   function showErr(el, msg){ el.textContent=msg; el.style.display='block'; }
 
@@ -808,12 +994,12 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 
 // ━━ CURSOR ━━
 (function(){
-  var dot=document.getElementById('cdot'),ring=document.getElementById('cring');
-  var mx=-300,my=-300,rx=-300,ry=-300,alive=false;
+  // Create cursor elements dynamically so they're always at end of body
+  var dot=document.createElement('div'); dot.id='cdot'; document.body.appendChild(dot);
+  var ring=document.createElement('div'); ring.id='cring'; document.body.appendChild(ring);
+  var mx=-300,my=-300,rx=-300,ry=-300;
   var s=document.createElement('style');s.textContent='html,body,*{cursor:none!important;}';document.head.appendChild(s);
-  document.addEventListener('mouseover',function(e){if(e.target&&e.target.style)e.target.style.setProperty('cursor','none','important');},true);
-  document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;if(!alive){dot.style.opacity='1';ring.style.opacity='1';alive=true;}},{passive:true});
-  document.addEventListener('mousedown',function(){document.documentElement.style.setProperty('cursor','none','important');document.body.style.setProperty('cursor','none','important');});
+  document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;},{passive:true});
   (function loop(){dot.style.transform='translate('+mx+'px,'+my+'px) translate(-50%,-50%)';rx+=(mx-rx)*0.13;ry+=(my-ry)*0.13;ring.style.transform='translate('+rx+'px,'+ry+'px) translate(-50%,-50%)';requestAnimationFrame(loop);})();
 })();
 
@@ -827,7 +1013,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 // ━━ JOURNEY LEGEND ━━
 var JOURNEY = [
   {n:9,name:'Discovery',   color:'rgba(140,220,210,',
-   desc:'<p style="margin:0 0 8px 0;">Explore knowledge systems, their basic teachings, and your pattern within them.</p><p style="margin:0;">Dive deeper by entering the sphere, where you\'ll encounter the foundational teachings of each system and your pattern.</p>'},
+   desc:'<p style="margin:0 0 8px 0;">Click each sphere to explore Knowledge Systems, their basic teachings, and your pattern within them.</p><p style="margin:0;">Dive deeper by entering the sphere, where you\'ll encounter the foundational teachings of each system and your pattern.</p>'},
   {n:8,name:'Foundations', color:'rgba(65,200,194,',
    desc:'Study the structural logic of each system you\'ve chosen — its historical roots, internal mechanics, and the specific outputs generated from your birth data. Build a working model before applying it.'},
   {n:7,name:'Application', color:'rgba(80,170,192,',
@@ -1195,10 +1381,13 @@ function renderSessions(){
 }
 function saveCurrentSession(){
   if(!history.length) return;
+  // Prompt user for a custom label
+  var defaultLabel=history[0].content.slice(0,48)+(history[0].content.length>48?'…':'');
+  var label=prompt('Name this session:',defaultLabel);
+  if(label===null) return; // user cancelled
+  label=label.trim()||defaultLabel;
   var now=new Date();
   var dateStr=now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  // Label from first user message
-  var label=history[0].content.slice(0,48)+(history[0].content.length>48?'…':'');
   // Full transcript
   var full=history.map(function(m){return (m.role==='user'?'You':'Temenos')+': '+m.content;}).join('\n\n');
   // Preview — first exchange
@@ -1401,7 +1590,7 @@ function draw(){
   //   Actually: largest when bead is at BOTTOM (just born / just arrived), smallest at TOP (just split).
   //   So glowR is max at cyclePos=0 (bottom), min at cyclePos=0.5 (top).
 
-  var torusT   = t * 0.026;
+  var torusT   = t * 0.018;
   var cyclePos = torusT % 1;    // 0→1 master, bead A phase
 
   var topY = CY - R;
@@ -1448,7 +1637,7 @@ function draw(){
     var rAlpha = rPhase < 0.06 ? rPhase/0.06
                : rPhase > 0.94 ? (1-rPhase)/0.06
                : 1.0;
-    rAlpha *= 0.82;
+    rAlpha *= 0.55;
     // Halo size: constant small (matches center glow max) — pure aqua, no color change
     var hr = 11; // fixed halo radius in px — matches glowR peak
     var bg2 = ctx.createRadialGradient(CX, beadY, 0, CX, beadY, hr);
@@ -1459,7 +1648,7 @@ function draw(){
     ctx.fillStyle = bg2; ctx.fill();
     // Bright aqua pinpoint core
     ctx.beginPath(); ctx.arc(CX, beadY, 2.5, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba('+aquaRGB+','+(rAlpha*1.3)+')'; ctx.fill();
+    ctx.fillStyle = 'rgba('+aquaRGB+','+(rAlpha*0.9)+')'; ctx.fill();
     // Comet tail downward
     var sg2 = ctx.createLinearGradient(CX, beadY, CX, beadY + 28);
     sg2.addColorStop(0,   'rgba('+aquaRGB+','+(rAlpha*.88)+')');
@@ -1484,19 +1673,15 @@ function draw(){
     var aAlpha = aPhase < 0.06 ? aPhase/0.06
                : aPhase > 0.94 ? (1-aPhase)/0.06
                : 1.0;
-    aAlpha *= 0.72;
-    // Color: pure violet (0→0.5), fade violet→red (0.5→1)
+    aAlpha *= 0.48;
+    // Color: pure violet above midpoint, instant snap to red at midpoint (aPhase=0.5)
     var arc_r, arc_g, arc_b;
-    if(aPhase <= 0.5){
-      // Pure violet the entire top half
+    if(aPhase < 0.5){
+      // Violet above the equator
       arc_r = 155; arc_g = 114; arc_b = 207;
     } else {
-      // Gentle fade from violet to red in bottom half
-      var cf = (aPhase - 0.5) / 0.5;  // 0→1
-      cf = cf * cf; // ease in — slow start, accelerates near bottom
-      arc_r = Math.round(155 + (232-155)*cf);
-      arc_g = Math.round(114 + (80 -114)*cf);
-      arc_b = Math.round(207 + (80 -207)*cf);
+      // Immediate red once past the midpoint
+      arc_r = 232; arc_g = 80; arc_b = 80;
     }
     var arcRGB = arc_r+','+arc_g+','+arc_b;
 
@@ -1517,7 +1702,7 @@ function draw(){
       ctx.fillStyle = abg; ctx.fill();
       // Bright pinpoint
       ctx.beginPath(); ctx.arc(bx, by, 2.2, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba('+arcRGB+','+(aAlpha*1.5)+')';
+      ctx.fillStyle = 'rgba('+arcRGB+','+(aAlpha*1.0)+')';
       ctx.fill();
     });
   }
@@ -1704,16 +1889,19 @@ function addTyping(){
   d.innerHTML='<div class="msg-r">Temenos</div><div class="msg-t"><div class="typing"><span></span><span></span><span></span></div></div>';
   chatMsgs.appendChild(d);chatMsgs.scrollTop=chatMsgs.scrollHeight;return d;
 }
+async function aiChat(system,msgs,maxTok){
+  var sb=window._sb;
+  if(!sb) throw new Error('Not connected');
+  var resp=await sb.functions.invoke('ai-chat',{body:{system:system,messages:msgs,max_tokens:maxTok||1000}});
+  if(resp.error) throw new Error(resp.error.message||'AI request failed');
+  return resp.data;
+}
 async function send(text){
   if(!text.trim())return;
   addMsg(text,false);history.push({role:'user',content:text});
   var ty=addTyping();
   try{
-    var r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildSYS(),messages:history})
-    });
-    var d=await r.json();
+    var d=await aiChat(buildSYS(),history,1000);
     var rep=(d.content&&d.content[0]&&d.content[0].text)||'Something went quiet.';
     ty.remove();addMsg(rep,true);history.push({role:'assistant',content:rep});
     updateSuggestions();
@@ -1722,15 +1910,11 @@ async function send(text){
 
 async function updateSuggestions(){
   try{
-    var r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:200,
-        system:'You are generating 3 short follow-up question suggestions for a consciousness mapping app chat. Based on the conversation so far, return ONLY a JSON array of 3 short question strings (max 8 words each). No other text, no markdown.',
-        messages:[...history,{role:'user',content:'Suggest 3 short follow-up questions as a JSON array.'}]
-      })
-    });
-    var d=await r.json();
+    var d=await aiChat(
+      'You are generating 3 short follow-up question suggestions for a consciousness mapping app chat. Based on the conversation so far, return ONLY a JSON array of 3 short question strings (max 8 words each). No other text, no markdown.',
+      [...history,{role:'user',content:'Suggest 3 short follow-up questions as a JSON array.'}],
+      200
+    );
     var txt=(d.content&&d.content[0]&&d.content[0].text)||'';
     var clean=txt.replace(/```json|```/g,'').trim();
     var qs=JSON.parse(clean);
@@ -1743,18 +1927,13 @@ async function updateSuggestions(){
   }catch(e){/* keep existing suggestions */}
 }
 async function replaceSuggestion(btn){
-  // Fade out the clicked button
   btn.style.opacity='0.3';btn.style.pointerEvents='none';
   try{
-    var r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:80,
-        system:'You are generating a single short follow-up question for a consciousness mapping app chat. Based on the conversation, return ONLY one question string, max 9 words, no quotes, no punctuation at the end, no extra text.',
-        messages:[...history,{role:'user',content:'Give me one new short follow-up question I could ask.'}]
-      })
-    });
-    var d=await r.json();
+    var d=await aiChat(
+      'You are generating a single short follow-up question for a consciousness mapping app chat. Based on the conversation, return ONLY one question string, max 9 words, no quotes, no punctuation at the end, no extra text.',
+      [...history,{role:'user',content:'Give me one new short follow-up question I could ask.'}],
+      80
+    );
     var q=((d.content&&d.content[0]&&d.content[0].text)||'').replace(/^["']|["']$/g,'').trim();
     if(q){btn.textContent=q;btn.dataset.q=q;}
   }catch(e){/* keep existing */}
@@ -1786,6 +1965,34 @@ document.getElementById('settings-btn').addEventListener('click', openSettings);
 document.getElementById('settings-close').addEventListener('click', closeSettings);
 document.getElementById('settings-backdrop').addEventListener('click', closeSettings);
 
+// ── SUGGESTION BOX ──
+document.getElementById('suggestion-send').addEventListener('click', function(){
+  var txt = document.getElementById('suggestion-text');
+  var status = document.getElementById('suggestion-status');
+  var msg = txt.value.trim();
+  if(!msg){ status.textContent='Please write something first.'; status.style.color='var(--ember)'; status.style.opacity='1'; return; }
+  var btn = this;
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  var sb = window._sb;
+  sb.auth.getUser().then(function(res){
+    var user = res.data && res.data.user;
+    sb.from('suggestions').insert({
+      user_id: user ? user.id : null,
+      user_email: user ? user.email : null,
+      message: msg
+    }).then(function(ins){
+      if(ins.error){
+        status.textContent='Could not send — try again.'; status.style.color='var(--ember)'; status.style.opacity='1';
+      } else {
+        txt.value = '';
+        status.textContent='Thank you for your feedback!'; status.style.color='var(--teal)'; status.style.opacity='1';
+        setTimeout(function(){ status.style.opacity='0'; }, 3000);
+      }
+      btn.textContent='Send'; btn.disabled=false;
+    });
+  });
+});
+
 // Speed slider → velY target
 document.getElementById('setting-speed').addEventListener('input', function(){
   var v = parseInt(this.value) / 100;
@@ -1816,8 +2023,23 @@ document.getElementById('setting-stars').addEventListener('change', function(){
 document.getElementById('setting-cursor').addEventListener('change', function(){
   var dot  = document.getElementById('cdot');
   var ring = document.getElementById('cring');
-  if(dot)  dot.style.opacity  = this.checked ? '' : '0';
-  if(ring) ring.style.opacity = this.checked ? '' : '0';
+  if(this.checked){
+    if(dot)  dot.style.display  = '';
+    if(ring) ring.style.display = '';
+    document.documentElement.style.cursor = '';
+    document.body.style.cursor = '';
+    // Re-apply cursor:none via the injected stylesheet
+    var sheets = document.querySelectorAll('style');
+    sheets.forEach(function(s){ if(s.textContent.indexOf('cursor:none')!==-1) s.disabled = false; });
+  } else {
+    if(dot)  dot.style.display  = 'none';
+    if(ring) ring.style.display = 'none';
+    // Disable cursor:none stylesheets so the system cursor shows
+    var sheets = document.querySelectorAll('style');
+    sheets.forEach(function(s){ if(s.textContent.indexOf('cursor:none')!==-1) s.disabled = true; });
+    document.documentElement.style.cursor = 'auto';
+    document.body.style.cursor = 'auto';
+  }
 });
 
 // Support btn — placeholder
