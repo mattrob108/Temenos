@@ -6,7 +6,8 @@
 <title>Temenos — Your Sphere</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Syne:wght@300;400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="js/config.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -288,25 +289,24 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
         <div style="height:1px;background:rgba(255,255,255,.07);margin:20px 0 16px;"></div>
         <div style="font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Account</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:.9rem;color:rgba(232,228,220,.6);line-height:1.7;">
-          <span style="color:var(--gold);">Member Status:</span> <span style="color:var(--teal);">Explorer</span> &nbsp;·&nbsp;
-          <span style="color:var(--muted);">Joined March 2026</span>
+          <span style="color:var(--gold);">Member Status:</span> <span id="settings-status" style="color:var(--teal);">Explorer</span>
         </div>
 
         <div style="height:1px;background:rgba(255,255,255,.07);margin:18px 0 14px;"></div>
         <div style="font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Billing</div>
 
-        <div style="background:rgba(201,169,110,.05);border:1px solid rgba(201,169,110,.14);border-radius:6px;padding:12px 14px;margin-bottom:10px;">
+        <div id="settings-plan-card" style="background:rgba(201,169,110,.05);border:1px solid rgba(201,169,110,.14);border-radius:6px;padding:12px 14px;margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
             <span style="font-family:'Syne',sans-serif;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);">Current Plan</span>
-            <span style="font-family:'Cormorant Garamond',serif;font-size:.82rem;color:rgba(232,228,220,.5);">Free</span>
+            <span id="settings-plan-name" style="font-family:'Cormorant Garamond',serif;font-size:.82rem;color:rgba(232,228,220,.5);">Explorer</span>
           </div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:.76rem;color:rgba(232,228,220,.42);line-height:1.6;">Basic sphere access · 1 knowledge system</div>
+          <div id="settings-plan-desc" style="font-family:'Cormorant Garamond',serif;font-size:.76rem;color:rgba(232,228,220,.42);line-height:1.6;">7-day free trial · Full sphere access</div>
         </div>
 
-        <button onclick="closeSettings()" style="width:100%;padding:9px;background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.3);color:#4ecdc4;font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;border-radius:3px;transition:background .2s;margin-bottom:6px;" onmouseover="this.style.background='rgba(78,205,196,.18)'" onmouseout="this.style.background='rgba(78,205,196,.08)'">Upgrade to Initiate &rarr;</button>
+        <button id="settings-upgrade-btn" onclick="if(window._startSubscriptionCheckout) window._startSubscriptionCheckout(this);" style="width:100%;padding:9px;background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.3);color:#4ecdc4;font-family:'Syne',sans-serif;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;border-radius:3px;transition:background .2s;margin-bottom:6px;" onmouseover="this.style.background='rgba(78,205,196,.18)'" onmouseout="this.style.background='rgba(78,205,196,.08)'">Unlock Initiate &rarr;</button>
 
         <div style="display:flex;gap:8px;margin-top:4px;">
-          <button style="flex:1;padding:7px;background:transparent;border:1px solid rgba(255,255,255,.08);color:rgba(232,228,220,.38);font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='rgba(232,228,220,.7)';this.style.borderColor='rgba(255,255,255,.18)'" onmouseout="this.style.color='rgba(232,228,220,.38)';this.style.borderColor='rgba(255,255,255,.08)'">Manage Subscription</button>
+          <button style="flex:1;padding:7px;background:transparent;border:1px solid rgba(255,255,255,.08);color:rgba(232,228,220,.38);font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='rgba(232,228,220,.7)';this.style.borderColor='rgba(255,255,255,.18)'" onmouseout="this.style.color='rgba(232,228,220,.38)';this.style.borderColor='rgba(255,255,255,.08)'">Manage Plan</button>
           <button style="flex:1;padding:7px;background:transparent;border:1px solid rgba(255,255,255,.08);color:rgba(232,228,220,.38);font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;transition:color .2s,border-color .2s;" onmouseover="this.style.color='rgba(232,228,220,.7)';this.style.borderColor='rgba(255,255,255,.18)'" onmouseout="this.style.color='rgba(232,228,220,.38)';this.style.borderColor='rgba(255,255,255,.08)'">Billing History</button>
         </div>
       </div>
@@ -498,9 +498,8 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 // SUPABASE AUTH + ONBOARDING
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 (function(){
-  var SUPA_URL = 'https://isfdktgunaquujmvklcr.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzZmRrdGd1bmFxdXVqbXZrbGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMDk5NTcsImV4cCI6MjA4ODY4NTk1N30.oBKxnWzvKALntk2qP3rg0tSUuFVDlACzfL-upuVhYEo';
-  var sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+  var cfg = window.TEMENOS_CONFIG || {};
+  var sb = supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
 
   // Draw stars on auth gate canvas
   var ac = document.getElementById('auth-stars');
@@ -532,15 +531,57 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     setTimeout(function(){ gate.style.display='none'; }, 650);
   }
 
+  // ── TIER HELPERS ──
+  var ALL_PURCHASABLE = ['enneagram','mbti','numerology','ifs','arch','custom'];
+
+  function getTrialDaysLeft(profile){
+    if(!profile.trial_started_at) return 0;
+    var started = new Date(profile.trial_started_at);
+    var now = new Date();
+    var diff = 7 - Math.floor((now - started) / (1000*60*60*24));
+    return Math.max(0, diff);
+  }
+
+  function isTrialExpired(profile){
+    return profile.plan === 'explorer' && getTrialDaysLeft(profile) <= 0;
+  }
+
+  function checkProficientUpgrade(profile){
+    var unlocked = profile.systems_unlocked || [];
+    var hasAll = ALL_PURCHASABLE.every(function(id){ return unlocked.indexOf(id) !== -1; });
+    if(hasAll && profile.plan === 'initiate'){
+      sb.from('profiles').update({ plan: 'proficient' }).eq('id', profile.id).then(function(){
+        profile.plan = 'proficient';
+        var tp = document.getElementById('topbar-plan');
+        if(tp){ tp.textContent = 'Proficient'; tp.style.color = '#9b72cf'; }
+      });
+    }
+  }
+
+  function getTierDisplay(profile){
+    var plan = profile.plan || 'explorer';
+    if(plan === 'proficient') return { label:'Proficient', color:'#9b72cf' };
+    if(plan === 'initiate')   return { label:'Initiate',   color:'#4ecdc4' };
+    var days = getTrialDaysLeft(profile);
+    if(days > 0) return { label:'Explorer · ' + days + 'd left', color:'#c9a96e' };
+    return { label:'Explorer · Trial Ended', color:'#e8705a' };
+  }
+
   // Populate app UI from profile
   function applyProfile(profile){
+    // Normalize legacy 'free' plans
+    if(profile.plan === 'free') profile.plan = 'explorer';
+
     var firstName = profile.name.split(' ')[0];
     var tn = document.getElementById('topbar-name');
     var tp = document.getElementById('topbar-plan');
     var sn = document.getElementById('sphere-name');
     var sd = document.getElementById('sphere-date');
     if(tn) tn.textContent = firstName;
-    if(tp) tp.textContent = capitalise(profile.plan);
+
+    var tier = getTierDisplay(profile);
+    if(tp){ tp.textContent = tier.label; tp.style.color = tier.color; }
+
     if(sn) sn.textContent = profile.name;
     if(sd){
       var dStr = formatBirthdate(profile.birthdate);
@@ -549,7 +590,92 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     }
     // Update AI companion system prompt
     window._userProfile = profile;
+
+    // Update settings panel
+    var settingsStatus   = document.getElementById('settings-status');
+    var settingsPlanName = document.getElementById('settings-plan-name');
+    var settingsPlanDesc = document.getElementById('settings-plan-desc');
+    var settingsUpgrade  = document.getElementById('settings-upgrade-btn');
+    if(settingsStatus){ settingsStatus.textContent = tier.label; settingsStatus.style.color = tier.color; }
+    if(settingsPlanName){
+      var planNames = { explorer:'Explorer', initiate:'Initiate · $12/mo', proficient:'Proficient' };
+      settingsPlanName.textContent = planNames[profile.plan] || 'Explorer';
+    }
+    if(settingsPlanDesc){
+      var planDescs = {
+        explorer: getTrialDaysLeft(profile) > 0 ? '7-day free trial · ' + getTrialDaysLeft(profile) + ' days remaining' : 'Trial ended · Upgrade to continue',
+        initiate: '$12/month · Purchase systems at $10 each',
+        proficient: 'All systems unlocked · Full access'
+      };
+      settingsPlanDesc.textContent = planDescs[profile.plan] || '';
+    }
+    if(settingsUpgrade){
+      if(profile.plan === 'initiate' || profile.plan === 'proficient'){
+        settingsUpgrade.style.display = 'none';
+      }
+    }
+
+    // Check for Proficient auto-upgrade
+    checkProficientUpgrade(profile);
+
+    // Show paywall if trial expired and not a paid user
+    if(isTrialExpired(profile)){
+      setTimeout(function(){ showPaywall(profile); }, 400);
+    }
   }
+
+  // ── PAYWALL OVERLAY ──
+  function showPaywall(profile){
+    if(document.getElementById('paywall-overlay')) return;
+    var overlay = document.createElement('div');
+    overlay.id = 'paywall-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:250;display:flex;align-items:center;justify-content:center;background:rgba(4,5,10,.92);backdrop-filter:blur(12px);z-index:250;';
+    overlay.innerHTML = '<div style="width:min(480px,90vw);background:rgba(8,12,24,.95);border:1px solid rgba(255,255,255,.09);border-radius:12px;backdrop-filter:blur(28px);overflow:hidden;text-align:center;">'
+      +'<div style="height:3px;background:linear-gradient(90deg,transparent,rgba(78,205,196,.7),transparent);"></div>'
+      +'<div style="padding:36px 32px 28px;">'
+      +'<div style="font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;color:var(--ember);margin-bottom:8px;">Trial Ended</div>'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:1.6rem;font-weight:300;color:var(--text);margin-bottom:8px;">Your 7-day Explorer trial has ended</div>'
+      +'<div style="font-size:.72rem;color:var(--muted);line-height:1.8;margin-bottom:28px;">Upgrade to <span style="color:#4ecdc4;font-weight:400;">Initiate</span> to keep access to your sphere, AI companion, and all knowledge systems.</div>'
+      +'<div style="background:rgba(78,205,196,.05);border:1px solid rgba(78,205,196,.18);border-radius:8px;padding:18px 20px;margin-bottom:20px;text-align:left;">'
+      +'<div style="font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:#4ecdc4;margin-bottom:10px;">Initiate — $12/month</div>'
+      +'<div style="font-size:.68rem;color:var(--muted);line-height:1.9;">'
+      +'<div>Your personal sphere + all birth systems</div>'
+      +'<div>AI companion — unlimited conversations</div>'
+      +'<div>Purchase additional systems at $10 each</div>'
+      +'<div>Unlock all systems + custom node to reach Proficient status</div>'
+      +'</div></div>'
+      +'<button id="paywall-upgrade" style="width:100%;padding:14px;background:rgba(78,205,196,.12);border:1px solid rgba(78,205,196,.4);color:#4ecdc4;font-family:\'Syne\',sans-serif;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;border-radius:4px;transition:background .2s;margin-bottom:10px;">Unlock — $12/month</button>'
+      +'<button id="paywall-signout" style="width:100%;padding:10px;background:transparent;border:1px solid rgba(255,255,255,.08);color:rgba(232,228,220,.35);font-family:\'Syne\',sans-serif;font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;">Sign Out</button>'
+      +'</div></div>';
+    document.body.appendChild(overlay);
+
+    document.getElementById('paywall-upgrade').addEventListener('click', function(){
+      startSubscriptionCheckout(this);
+    });
+    document.getElementById('paywall-signout').addEventListener('click', function(){
+      sb.auth.signOut().then(function(){ window.location.reload(); });
+    });
+  }
+
+  // ── STRIPE SUBSCRIPTION CHECKOUT ──
+  function startSubscriptionCheckout(btn){
+    var origText = btn.textContent;
+    btn.textContent = 'Loading…'; btn.disabled = true;
+    sb.auth.getSession().then(function(res){
+      var session = res.data && res.data.session;
+      if(!session){ alert('Please sign in first.'); btn.textContent=origText; btn.disabled=false; return; }
+      sb.functions.invoke('create-subscription', { body: {} }).then(function(resp){
+        if(resp.error || !resp.data || !resp.data.sessionId){
+          alert('Could not start checkout. Please try again.');
+          btn.textContent=origText; btn.disabled=false;
+          return;
+        }
+        var stripe = window.Stripe(window.TEMENOS_CONFIG.STRIPE_PUBLIC_KEY);
+        stripe.redirectToCheckout({ sessionId: resp.data.sessionId });
+      });
+    });
+  }
+  window._startSubscriptionCheckout = startSubscriptionCheckout;
 
   function capitalise(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
 
@@ -615,7 +741,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
       sb.from('profiles').insert({
         id: uid, name: name, email: email,
         birthdate: bdate, birth_location: location, birth_time: btime,
-        plan: 'free', systems_unlocked: '[]'
+        plan: 'explorer', systems_unlocked: '[]', trial_started_at: new Date().toISOString()
       }).then(function(ins){
         if(ins.error){ showErr(obError, ins.error.message); obSubmit.textContent='Enter My Sphere'; obSubmit.disabled=false; return; }
         applyProfile({ name:name, email:email, birthdate:bdate, birth_location:location, birth_time:btime, plan:'free' });
@@ -674,8 +800,10 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     }
   });
 
-  // Expose sb globally for settings sign-out button later
+  // Expose globals for cross-IIFE access
   window._sb = sb;
+  window._checkProficientUpgrade = checkProficientUpgrade;
+  window._applyProfile = applyProfile;
 })();
 
 // ━━ CURSOR ━━
@@ -1743,9 +1871,9 @@ document.getElementById('support-btn').addEventListener('click', function(){
     +'<button id="shop-close" style="position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(232,228,220,.4);font-size:1rem;">✕</button>'
     +'<div style="font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;color:#4ecdc4;margin-bottom:4px;">Add a System</div>'
     +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:1.35rem;font-weight:300;color:var(--text);margin-bottom:6px;">Expand Your Sphere</div>'
-    +'<div style="font-size:.62rem;color:var(--muted);margin-bottom:22px;letter-spacing:.04em;">Each system adds a new node to your sphere &nbsp;·&nbsp; <span style="color:var(--gold);">$9.99 each</span></div>'
+    +'<div style="font-size:.62rem;color:var(--muted);margin-bottom:22px;letter-spacing:.04em;">Each system adds a new node to your sphere &nbsp;·&nbsp; <span style="color:var(--gold);">$10 each</span></div>'
     +'<div id="shop-items" style="display:flex;flex-direction:column;gap:8px;"></div>'
-    +'<div style="margin-top:18px;font-size:.52rem;color:rgba(232,228,220,.28);letter-spacing:.06em;text-align:center;">Payment integration coming soon · Selections saved to your profile</div>'
+    +'<div style="margin-top:18px;font-size:.52rem;color:rgba(232,228,220,.28);letter-spacing:.06em;text-align:center;">Secure checkout powered by Stripe</div>'
     +'</div>';
 
   var itemsEl;
@@ -1759,18 +1887,68 @@ document.getElementById('support-btn').addEventListener('click', function(){
     row.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+item.color+';box-shadow:0 0 8px '+item.color+';"></div>'
       +'<div style="flex:1;"><div style="font-size:.78rem;letter-spacing:.06em;color:var(--text);">'+item.name+'</div>'
       +'<div style="font-size:.6rem;color:var(--muted);margin-top:2px;">'+item.sub+'</div></div>'
-      +'<div style="font-size:.72rem;color:var(--gold);font-family:\'Cormorant Garamond\',serif;font-weight:300;margin-right:10px;">$9.99</div>'
+      +'<div style="font-size:.72rem;color:var(--gold);font-family:\'Cormorant Garamond\',serif;font-weight:300;margin-right:10px;">$10</div>'
       +'<button class="shop-add-btn" style="padding:6px 14px;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.3);color:#4ecdc4;font-family:\'Syne\',sans-serif;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;border-radius:3px;white-space:nowrap;">Add</button>';
     row.addEventListener('mouseenter', function(){ row.style.background='rgba(255,255,255,.05)'; row.style.borderColor='rgba(255,255,255,.12)'; });
     row.addEventListener('mouseleave', function(){ row.style.background='rgba(255,255,255,.02)'; row.style.borderColor='rgba(255,255,255,.07)'; });
     row.querySelector('.shop-add-btn').addEventListener('click', function(){
-      this.textContent = 'Added \u2713';
-      this.style.background = 'rgba(78,205,196,.2)';
-      this.style.borderColor = 'rgba(78,205,196,.5)';
-      this.disabled = true;
+      var btn = this;
+      btn.textContent = 'Loading…';
+      btn.disabled = true;
+      purchaseSystem(item.id, item.name, btn);
     });
     itemsEl.appendChild(row);
   });
+
+  // ── Stripe Checkout ──
+  var stripe = window.Stripe(window.TEMENOS_CONFIG.STRIPE_PUBLIC_KEY);
+
+  function purchaseSystem(systemId, systemName, btn){
+    var sb = window._sb;
+    sb.auth.getSession().then(function(res){
+      var session = res.data && res.data.session;
+      if(!session){ alert('Please sign in first.'); btn.textContent='Add'; btn.disabled=false; return; }
+
+      sb.functions.invoke('create-checkout', {
+        body: { system_id: systemId, system_name: systemName }
+      }).then(function(resp){
+        if(resp.error || !resp.data || !resp.data.sessionId){
+          alert('Could not start checkout. Please try again.');
+          btn.textContent = 'Add'; btn.disabled = false;
+          return;
+        }
+        stripe.redirectToCheckout({ sessionId: resp.data.sessionId });
+      });
+    });
+  }
+
+  // Check URL for successful purchase return
+  (function(){
+    var params = new URLSearchParams(window.location.search);
+    var isSuccess = params.get('purchase') === 'success' || params.get('subscription') === 'success';
+    if(isSuccess){
+      // Remove query params
+      window.history.replaceState({}, '', window.location.pathname);
+      // Refresh full profile to pick up plan changes and unlocked systems
+      var sb = window._sb;
+      sb.auth.getSession().then(function(res){
+        if(res.data && res.data.session){
+          sb.from('profiles').select('*').eq('id', res.data.session.user.id).single()
+            .then(function(p){
+              if(p.data){
+                window._userProfile = p.data;
+                // Remove paywall if subscription succeeded
+                var pw = document.getElementById('paywall-overlay');
+                if(pw) pw.remove();
+                // Re-apply profile to refresh all UI
+                if(window._applyProfile) window._applyProfile(p.data);
+                if(window._checkProficientUpgrade) window._checkProficientUpgrade(p.data);
+              }
+            });
+        }
+      });
+    }
+  })();
 
   function openShop(){ shopOverlay.style.opacity='1'; shopOverlay.style.pointerEvents='auto'; shopCard.style.transform='scale(1) translateY(0)'; }
   function closeShop(){ shopOverlay.style.opacity='0'; shopOverlay.style.pointerEvents='none'; shopCard.style.transform='scale(.94) translateY(8px)'; }
