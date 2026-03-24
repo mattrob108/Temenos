@@ -286,9 +286,33 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 
         <div style="height:1px;background:rgba(255,255,255,.07);margin:20px 0 16px;"></div>
         <div style="font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Account</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:.9rem;color:rgba(232,228,220,.6);line-height:1.7;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.9rem;color:rgba(232,228,220,.6);line-height:1.7;margin-bottom:14px;">
           <span style="color:var(--gold);">Member Status:</span> <span id="settings-status" style="color:var(--teal);">Explorer</span>
         </div>
+
+        <div style="font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Profile</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:6px;">
+          <div>
+            <label style="font-size:.44rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,228,220,.35);display:block;margin-bottom:4px;">Name</label>
+            <input id="settings-name" type="text" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.72rem;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='rgba(201,169,110,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <label style="font-size:.44rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,228,220,.35);display:block;margin-bottom:4px;">Date of Birth</label>
+              <input id="settings-birthdate" type="date" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.72rem;outline:none;transition:border-color .2s;color-scheme:dark;" onfocus="this.style.borderColor='rgba(201,169,110,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" />
+            </div>
+            <div>
+              <label style="font-size:.44rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,228,220,.35);display:block;margin-bottom:4px;">Time of Birth</label>
+              <input id="settings-birthtime" type="time" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.72rem;outline:none;transition:border-color .2s;color-scheme:dark;" onfocus="this.style.borderColor='rgba(201,169,110,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" />
+            </div>
+          </div>
+          <div>
+            <label style="font-size:.44rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,228,220,.35);display:block;margin-bottom:4px;">Place of Birth</label>
+            <input id="settings-location" type="text" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.72rem;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='rgba(201,169,110,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" />
+          </div>
+        </div>
+        <button id="settings-save-profile" style="width:100%;padding:8px;background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.22);color:var(--gold);font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;border-radius:3px;transition:background .2s;margin-top:6px;" onmouseover="this.style.background='rgba(201,169,110,.16)'" onmouseout="this.style.background='rgba(201,169,110,.08)'">Save Profile</button>
+        <div id="settings-profile-status" style="font-size:.52rem;color:var(--teal);text-align:center;margin-top:6px;opacity:0;transition:opacity .3s;"></div>
 
         <div style="height:1px;background:rgba(255,255,255,.07);margin:18px 0 14px;"></div>
         <div style="font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Billing</div>
@@ -487,9 +511,9 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
             <input type="hidden" id="ob-lng" />
           </div>
           <div>
-            <label style="font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;">Time of Birth <span style="color:rgba(232,228,220,.3);">(optional)</span></label>
+            <label style="font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;">Time of Birth <span style="color:var(--ember);">*</span></label>
             <input id="ob-birthtime" type="time" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.78rem;outline:none;transition:border-color .2s;color-scheme:dark;" />
-            <div style="font-size:.56rem;color:rgba(232,228,220,.3);margin-top:5px;line-height:1.6;">Required for Vedic astrology charts. Without it, 4 of 5 systems will populate.</div>
+            <div style="font-size:.56rem;color:rgba(232,228,220,.3);margin-top:5px;line-height:1.6;">Required for accurate Vedic astrology and other system mappings.</div>
           </div>
         </div>
 
@@ -833,6 +857,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     if(!bdate)    { showErr(obError,'Please enter your date of birth.'); return; }
     if(!location) { showErr(obError,'Please enter your place of birth.'); return; }
     if(!window._isLocationSelected()){ showErr(obError,'Please select a city from the dropdown suggestions.'); return; }
+    if(!btime)    { showErr(obError,'Please enter your time of birth — it\'s needed for accurate system mappings.'); return; }
 
     obError.style.display = 'none';
     obSubmit.textContent = 'Building your sphere…'; obSubmit.disabled = true;
@@ -1963,9 +1988,44 @@ function closeSettings(){
   settingsModal.style.opacity='0'; settingsModal.style.pointerEvents='none';
   settingsCard.style.transform='scale(.94) translateY(8px)';
 }
-document.getElementById('settings-btn').addEventListener('click', openSettings);
+document.getElementById('settings-btn').addEventListener('click', function(){
+  // Populate profile fields when opening settings
+  var p = window._userProfile || {};
+  document.getElementById('settings-name').value = p.name || '';
+  document.getElementById('settings-birthdate').value = p.birthdate || '';
+  document.getElementById('settings-birthtime').value = p.birth_time || '';
+  document.getElementById('settings-location').value = p.birth_location || '';
+  openSettings();
+});
 document.getElementById('settings-close').addEventListener('click', closeSettings);
 document.getElementById('settings-backdrop').addEventListener('click', closeSettings);
+
+// ── PROFILE SAVE ──
+document.getElementById('settings-save-profile').addEventListener('click', function(){
+  var btn = this;
+  var status = document.getElementById('settings-profile-status');
+  var name = document.getElementById('settings-name').value.trim();
+  var bdate = document.getElementById('settings-birthdate').value;
+  var btime = document.getElementById('settings-birthtime').value || null;
+  var loc = document.getElementById('settings-location').value.trim();
+  if(!name||!bdate||!loc){ status.textContent='Please fill in all fields.'; status.style.color='var(--ember)'; status.style.opacity='1'; return; }
+  btn.textContent='Saving…'; btn.disabled=true;
+  var sb = window._sb;
+  sb.auth.getUser().then(function(res){
+    if(!res.data||!res.data.user){ status.textContent='Session error.'; status.style.color='var(--ember)'; status.style.opacity='1'; btn.textContent='Save Profile'; btn.disabled=false; return; }
+    sb.from('profiles').update({ name:name, birthdate:bdate, birth_time:btime, birth_location:loc }).eq('id',res.data.user.id).then(function(upd){
+      if(upd.error){ status.textContent='Error: '+upd.error.message; status.style.color='var(--ember)'; status.style.opacity='1'; }
+      else {
+        // Update local profile
+        window._userProfile = Object.assign(window._userProfile||{}, { name:name, birthdate:bdate, birth_time:btime, birth_location:loc });
+        if(window._applyProfile) window._applyProfile(window._userProfile);
+        status.textContent='Profile saved!'; status.style.color='var(--teal)'; status.style.opacity='1';
+        setTimeout(function(){ status.style.opacity='0'; }, 3000);
+      }
+      btn.textContent='Save Profile'; btn.disabled=false;
+    });
+  });
+});
 
 // ── SUGGESTION BOX ──
 document.getElementById('suggestion-send').addEventListener('click', function(){
