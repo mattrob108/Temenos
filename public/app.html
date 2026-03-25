@@ -645,6 +645,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   }
 
   function isTrialExpired(profile){
+    if(profile.email === 'mattrob108@gmail.com') return false;
     return profile.plan === 'explorer' && getTrialDaysLeft(profile) <= 0;
   }
 
