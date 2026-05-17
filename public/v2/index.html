@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temenos — Know Yourself. Deeply.</title>
+  <meta name="description" content="A mandala of self-knowledge. Cosmic insight, grounded in you." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Cormorant Garamond"', 'serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            void: '#04050a',
+            navy: '#0a0e27',
+            gold: '#c9a96e',
+            teal: '#4ecdc4',
+            violet: '#9b72cf',
+            ember: '#e8705a',
+            ink:  '#e8e4dc',
+            muted: 'rgba(232,228,220,0.55)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    html, body { background: #04050a; color: #e8e4dc; }
+    .text-muted { color: rgba(232, 228, 220, 0.55); }
+    .cosmic-bg {
+      position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(155,114,207,0.18), transparent 55%),
+        radial-gradient(ellipse at 80% 70%, rgba(78,205,196,0.12), transparent 55%),
+        radial-gradient(ellipse at 50% 100%, rgba(232,112,90,0.10), transparent 60%),
+        #04050a;
+    }
+    .star {
+      position: absolute; background: #fff; border-radius: 9999px;
+      opacity: 0; animation: twinkle 6s infinite ease-in-out;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50%      { opacity: 0.85; }
+    }
+    .glass {
+      background: rgba(232, 228, 220, 0.04);
+      border: 1px solid rgba(232, 228, 220, 0.08);
+      backdrop-filter: blur(10px);
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #c9a96e, #b8945e);
+      color: #04050a; font-weight: 600; letter-spacing: 0.03em;
+      transition: transform 200ms, box-shadow 200ms;
+    }
+    .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 12px 28px -10px rgba(201,169,110,0.45); }
+    .btn-ghost { border: 1px solid rgba(201,169,110,0.4); color: #c9a96e; transition: all 200ms; }
+    .btn-ghost:hover { background: rgba(201,169,110,0.08); }
+    .display-title { font-family: 'Cormorant Garamond', serif; font-weight: 400; letter-spacing: 0.04em; }
+    .small-caps { letter-spacing: 0.25em; text-transform: uppercase; font-size: 0.72rem; }
+    .mandala-spin { animation: spin 60s linear infinite; transform-origin: center; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="font-sans antialiased">
+  <div class="cosmic-bg"></div>
+  <div id="starfield" aria-hidden="true"></div>
+
+  <!-- NAV -->
+  <nav class="w-full px-6 md:px-12 py-6 flex items-center justify-between relative z-10">
+    <div class="flex items-center gap-2">
+      <span class="display-title text-2xl text-gold">Temenos</span>
+    </div>
+    <div class="hidden sm:flex items-center gap-8 small-caps text-muted">
+      <a href="#how" class="hover:text-ink transition">How it works</a>
+      <a href="#systems" class="hover:text-ink transition">Systems</a>
+      <a href="#pro" class="hover:text-ink transition">Pro</a>
+      <a href="#faq" class="hover:text-ink transition">FAQ</a>
+    </div>
+    <a href="app.html" class="btn-ghost px-4 py-2 rounded-full small-caps">Sign in</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="px-6 md:px-12 pt-12 md:pt-24 pb-24 max-w-6xl mx-auto text-center relative">
+    <p class="small-caps text-gold mb-6">A Sacred Space for the Self</p>
+    <h1 class="display-title text-5xl md:text-7xl leading-tight mb-6">
+      Know Yourself.<br />
+      <span class="italic text-gold">Deeply.</span>
+    </h1>
+    <p class="text-lg md:text-xl text-muted max-w-2xl mx-auto mb-10">
+      A mandala of self-knowledge. Cosmic insight, grounded in you. Temenos draws together
+      astrology, human design, gene keys, and more into a living portrait of who you are.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <a href="app.html" class="btn-gold px-8 py-3 rounded-full small-caps">Get your profile</a>
+      <a href="#how" class="btn-ghost px-8 py-3 rounded-full small-caps">See how it works</a>
+    </div>
+
+    <!-- Mandala teaser -->
+    <div class="mt-16 flex justify-center">
+      <svg viewBox="-110 -110 220 220" width="320" height="320" class="opacity-80">
+        <g class="mandala-spin">
+          <circle r="100" fill="none" stroke="rgba(201,169,110,0.2)" />
+          <circle r="70"  fill="none" stroke="rgba(201,169,110,0.15)" />
+          <circle r="40"  fill="none" stroke="rgba(201,169,110,0.25)" />
+          <g>
+            <!-- 9 petals -->
+            <g id="petals"></g>
+          </g>
+          <circle r="14" fill="#c9a96e" />
+        </g>
+      </svg>
+    </div>
+    <script>
+      (function () {
+        const colors = ['#ffd166','#ef476f','#06d6a0','#118ab2','#9b72cf','#4ecdc4','#e8705a','#c9a96e','#ff6b6b'];
+        const petals = document.getElementById('petals');
+        if (!petals) return;
+        for (let i = 0; i < 9; i++) {
+          const angle = (i / 9) * Math.PI * 2 - Math.PI / 2;
+          const x = Math.cos(angle) * 70;
+          const y = Math.sin(angle) * 70;
+          const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 10);
+          c.setAttribute('fill', colors[i]); c.setAttribute('opacity', i < 4 ? 0.95 : 0.35);
+          petals.appendChild(c);
+          const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          l.setAttribute('x1', 0); l.setAttribute('y1', 0);
+          l.setAttribute('x2', x); l.setAttribute('y2', y);
+          l.setAttribute('stroke', 'rgba(232,228,220,0.18)'); l.setAttribute('stroke-width', '0.5');
+          petals.appendChild(l);
+        }
+      })();
+    </script>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="px-6 md:px-12 py-20 max-w-6xl mx-auto">
+    <p class="small-caps text-gold text-center mb-3">The Practice</p>
+    <h2 class="display-title text-4xl md:text-5xl text-center mb-16">How it works</h2>
+    <div class="grid md:grid-cols-4 gap-6">
+      <div class="glass rounded-2xl p-6">
+        <div class="text-gold display-title text-3xl mb-2">i.</div>
+        <h3 class="font-semibold mb-2">Enter your birth info</h3>
+        <p class="text-muted text-sm">Date, place, and time. We keep it private — used only to compute your chart.</p>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <div class="text-gold display-title text-3xl mb-2">ii.</div>
+        <h3 class="font-semibold mb-2">Four core systems compute</h3>
+        <p class="text-muted text-sm">Western & Vedic astrology, Human Design, and Gene Keys — populated automatically.</p>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <div class="text-gold display-title text-3xl mb-2">iii.</div>
+        <h3 class="font-semibold mb-2">Explore your mandala</h3>
+        <p class="text-muted text-sm">Click any petal to dive into the dimensional breakdown of that system.</p>
+      </div>
+      <div class="glass rounded-2xl p-6">
+        <div class="text-gold display-title text-3xl mb-2">iv.</div>
+        <h3 class="font-semibold mb-2">Add more systems</h3>
+        <p class="text-muted text-sm">Upgrade to Pro to weave in Enneagram, MBTI, Spirit Animal, Numerology, and Blood Type.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CORE SYSTEMS -->
+  <section id="systems" class="px-6 md:px-12 py-20 max-w-6xl mx-auto">
+    <p class="small-caps text-gold text-center mb-3">Included in Every Profile</p>
+    <h2 class="display-title text-4xl md:text-5xl text-center mb-4">The four core systems</h2>
+    <p class="text-muted text-center max-w-2xl mx-auto mb-12">Auto-computed from your birth date. They complement each other — four lenses, one self.</p>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="glass rounded-2xl p-7 border-l-2" style="border-color:#ffd166;">
+        <p class="small-caps text-muted mb-2">Sample</p>
+        <h3 class="display-title text-3xl mb-1">Western Astrology</h3>
+        <p class="text-gold mb-3">Virgo Sun · Scorpio Moon · Capricorn Rising</p>
+        <p class="text-muted text-sm">The inner sky at the moment of your birth — sun, moon, rising, planets, aspects, houses.</p>
+      </div>
+      <div class="glass rounded-2xl p-7 border-l-2" style="border-color:#ef476f;">
+        <p class="small-caps text-muted mb-2">Sample</p>
+        <h3 class="display-title text-3xl mb-1">Vedic Astrology</h3>
+        <p class="text-gold mb-3">Sidereal Leo · Moon in Magha</p>
+        <p class="text-muted text-sm">The sidereal chart with lunar mansions and karmic patterns — older, deeper, more fated.</p>
+      </div>
+      <div class="glass rounded-2xl p-7 border-l-2" style="border-color:#06d6a0;">
+        <p class="small-caps text-muted mb-2">Sample</p>
+        <h3 class="display-title text-3xl mb-1">Human Design</h3>
+        <p class="text-gold mb-3">Projector · Wait for Invitation · Splenic Authority</p>
+        <p class="text-muted text-sm">Your energetic blueprint — type, strategy, authority, and the way you’re built to move.</p>
+      </div>
+      <div class="glass rounded-2xl p-7 border-l-2" style="border-color:#118ab2;">
+        <p class="small-caps text-muted mb-2">Sample</p>
+        <h3 class="display-title text-3xl mb-1">Gene Keys</h3>
+        <p class="text-gold mb-3">Life’s Work 22 · Evolution 47 · Radiance 59</p>
+        <p class="text-muted text-sm">A hologenetic profile — the shadow, gift, and siddhi of each gene key in your unique sequence.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRO TIER -->
+  <section id="pro" class="px-6 md:px-12 py-20 max-w-6xl mx-auto">
+    <div class="glass rounded-3xl p-10 md:p-14 text-center">
+      <p class="small-caps text-gold mb-3">Temenos Pro</p>
+      <h2 class="display-title text-4xl md:text-5xl mb-5">Five more lenses</h2>
+      <p class="text-muted max-w-2xl mx-auto mb-10">Unlock the remaining petals: add systems by finding your type externally and entering it back into Temenos. Each is stored with full audit metadata so you can always trust the source.</p>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+        <div class="text-center">
+          <div class="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style="background:rgba(155,114,207,0.18); color:#9b72cf;">9</div>
+          <p class="small-caps mt-2">Enneagram</p>
+        </div>
+        <div class="text-center">
+          <div class="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style="background:rgba(78,205,196,0.18); color:#4ecdc4;">16</div>
+          <p class="small-caps mt-2">MBTI</p>
+        </div>
+        <div class="text-center">
+          <div class="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style="background:rgba(232,112,90,0.18); color:#e8705a;">∞</div>
+          <p class="small-caps mt-2">Spirit Animal</p>
+        </div>
+        <div class="text-center">
+          <div class="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style="background:rgba(201,169,110,0.18); color:#c9a96e;">π</div>
+          <p class="small-caps mt-2">Numerology</p>
+        </div>
+        <div class="text-center">
+          <div class="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style="background:rgba(255,107,107,0.18); color:#ff6b6b;">A</div>
+          <p class="small-caps mt-2">Blood Type</p>
+        </div>
+      </div>
+      <a href="app.html" class="btn-gold inline-block px-8 py-3 rounded-full small-caps">Start your profile</a>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="px-6 md:px-12 py-20 max-w-3xl mx-auto">
+    <p class="small-caps text-gold text-center mb-3">Common questions</p>
+    <h2 class="display-title text-4xl md:text-5xl text-center mb-12">FAQ</h2>
+    <div class="space-y-4">
+      <details class="glass rounded-xl p-5 cursor-pointer">
+        <summary class="font-medium">What is the mandala?</summary>
+        <p class="text-muted text-sm mt-2">A 9-fold geometry — four core petals plus five Pro petals — that grows as you weave more systems into your self-knowledge.</p>
+      </details>
+      <details class="glass rounded-xl p-5 cursor-pointer">
+        <summary class="font-medium">Is my data private?</summary>
+        <p class="text-muted text-sm mt-2">Yes. Your data is stored in your own row, protected by row-level security, and never shared. You can edit or delete at any time.</p>
+      </details>
+      <details class="glass rounded-xl p-5 cursor-pointer">
+        <summary class="font-medium">What if I don’t know my birth time?</summary>
+        <p class="text-muted text-sm mt-2">Make your best guess — we’ll flag the profile as approximate. You can update the exact time later in settings, and your systems will recompute.</p>
+      </details>
+      <details class="glass rounded-xl p-5 cursor-pointer">
+        <summary class="font-medium">Why these particular systems?</summary>
+        <p class="text-muted text-sm mt-2">They’re complementary lenses on the self — astrological, energetic, archetypal, somatic. Together they form a richer portrait than any single system alone.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="px-6 md:px-12 py-12 border-t border-white/5 text-muted text-sm flex flex-col md:flex-row justify-between gap-4">
+    <div class="display-title text-gold text-xl">Temenos</div>
+    <div class="flex gap-6">
+      <a href="#" class="hover:text-ink">Privacy</a>
+      <a href="#" class="hover:text-ink">Terms</a>
+      <a href="#" class="hover:text-ink">Contact</a>
+    </div>
+    <div>© 2026 Temenos. A sacred space.</div>
+  </footer>
+
+  <script>
+    // Starfield
+    (function () {
+      const field = document.getElementById('starfield');
+      if (!field) return;
+      field.style.position = 'fixed'; field.style.inset = '0'; field.style.zIndex = '-1';
+      field.style.pointerEvents = 'none';
+      for (let i = 0; i < 120; i++) {
+        const s = document.createElement('div');
+        s.className = 'star';
+        s.style.left = Math.random() * 100 + 'vw';
+        s.style.top  = Math.random() * 100 + 'vh';
+        const sz = Math.random() * 2 + 0.5;
+        s.style.width = sz + 'px'; s.style.height = sz + 'px';
+        s.style.animationDelay = (Math.random() * 6) + 's';
+        s.style.animationDuration = (4 + Math.random() * 6) + 's';
+        field.appendChild(s);
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -96,3 +96,27 @@ package.json    — Project metadata and scripts
 ## Important notes
 - The owner is a beginner developer — explain decisions clearly
 - sphere.html is a standalone sandbox copy of app.html with auth removed
+
+## v2 platform (mandala)
+
+A second-generation platform lives in `public/v2/`. It is an opinionated rewrite
+around a 9-fold **mandala** of self-knowledge systems (Western Astrology, Vedic
+Astrology, Human Design, Gene Keys + 5 Pro-tier petals: Enneagram, MBTI, Spirit
+Animal, Numerology, Blood Type).
+
+### v2 tech choices
+- **Single-file React artifact** (`public/v2/app.html`) — React + ReactDOM + Babel
+  Standalone loaded via CDN, Tailwind CSS via CDN. No build step.
+- **Supabase** for auth (magic link) and storage (`users_v2`, `user_systems`,
+  `user_custom_systems` tables). Schema in `supabase/migrations/20260517000000_v2_*.sql`.
+- **Audit-first data model**: every system row carries `source_api`,
+  `fetched_date`, `fallback_active`, `fallback_source`, `is_stale`. Wire real
+  APIs (astro-api.io etc.) by replacing `fetchSystemData()` in `app.html`.
+- **Demo mode**: if `v2/js/config.js` is absent, the app falls back to local-
+  state demo using `v2/data/systems.js`.
+
+### Key v2 components
+- `CosmicBackdrop` — Canvas starfield + drifting nebulae
+- `Mandala` — 9-fold SVG geometry with core/locked petals
+- `MagicLinkScreen` → `BirthInfoForm` → `ProfileView` → `SystemDetail` / `ExternalSystemModal` / `SettingsPanel` / `PaywallModal`
+- All state via React hooks; no router (single SPA, modal-driven detail views).
