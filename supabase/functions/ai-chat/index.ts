@@ -58,8 +58,18 @@ serve(async (req) => {
 
     const data = await resp.json();
 
+    if (!resp.ok) {
+      return new Response(
+        JSON.stringify({ error: data.error || "API request failed" }),
+        {
+          status: resp.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     return new Response(JSON.stringify(data), {
-      status: resp.status,
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

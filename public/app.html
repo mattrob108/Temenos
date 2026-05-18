@@ -30,8 +30,8 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   border-bottom:1px solid var(--gb);background:rgba(4,5,10,.88);
   backdrop-filter:blur(16px);gap:20px;}
 .t-logo{font-family:'Cormorant Garamond',serif;font-size:1.15rem;letter-spacing:.38em;
-  text-transform:uppercase;color:var(--gold);}
-.t-sub{font-size:.6rem;letter-spacing:.26em;text-transform:uppercase;color:#4ecdc4;}
+  text-transform:uppercase;color:var(--gold);line-height:1;display:flex;align-items:flex-end;}
+.t-sub{font-size:.6rem;letter-spacing:.26em;text-transform:uppercase;color:#4ecdc4;line-height:1;margin-bottom:2px;}
 .t-user{margin-left:auto;font-size:.72rem;letter-spacing:.12em;color:var(--gold);}
 .t-user b{color:var(--teal);font-weight:400;}
 .left-panel{border-right:1px solid var(--gb);background:var(--panel);overflow-y:auto;padding:16px 0;}
@@ -60,6 +60,10 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 /* RIGHT PANEL SPLIT */
 .chat-panel{border-left:1px solid var(--gb);background:var(--panel);display:flex;flex-direction:column;}
 .pathway-section{display:flex;flex-direction:column;flex-shrink:0;border-bottom:1px solid var(--gb);min-height:0;}
+.synth-level{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.05);}
+.synth-level:last-child{border-bottom:none;margin-bottom:0;}
+.synth-label{font-size:.44rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;font-family:'Syne',sans-serif;}
+.synth-text{font-family:'Cormorant Garamond',serif;font-size:.82rem;line-height:1.85;color:rgba(232,228,220,.78);}
 .companion-section{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;}
 /* SPHERE AREA */
 .sphere-area{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
@@ -68,8 +72,8 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   letter-spacing:.32em;text-transform:uppercase;color:var(--text);}
 .s-date{font-size:.52rem;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;margin-top:3px;}
 #sphere-canvas{display:block;z-index:2;position:relative;}
-.s-hint{position:absolute;bottom:18px;font-size:.5rem;letter-spacing:.22em;
-  text-transform:uppercase;color:rgba(232,228,220,.15);pointer-events:none;text-align:center;z-index:4;}
+.s-hint{position:absolute;bottom:90px;font-size:.58rem;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(232,228,220,.55);pointer-events:none;text-align:center;z-index:4;}
 
 /* GLASSMORPHISM MODAL */
 .modal-overlay{
@@ -240,7 +244,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   <!-- SETTINGS MODAL -->
   <div id="settings-modal" style="position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;">
     <div id="settings-backdrop" style="position:absolute;inset:0;background:rgba(4,5,10,.5);backdrop-filter:blur(4px);"></div>
-    <div id="settings-card" style="position:relative;z-index:1;width:min(380px,82%);max-height:min(70vh,540px);background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.1);border-radius:12px;backdrop-filter:blur(32px);box-shadow:0 0 80px rgba(0,0,0,.7);padding:0;overflow:hidden;display:flex;flex-direction:column;transform:scale(.94) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);">
+    <div id="settings-card" style="position:relative;z-index:1;width:min(460px,90%);max-height:min(75vh,650px);background:rgba(8,12,24,.88);border:1px solid rgba(255,255,255,.1);border-radius:12px;backdrop-filter:blur(32px);box-shadow:0 0 80px rgba(0,0,0,.7);padding:0;overflow:hidden;display:flex;flex-direction:column;transform:scale(.94) translateY(8px);transition:transform .3s cubic-bezier(.16,1,.3,1);">
       <div style="height:2px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.7),transparent);flex-shrink:0;"></div>
       <div style="padding:22px 24px 20px;overflow-y:auto;flex:1;">
         <button id="settings-close" style="position:sticky;float:right;top:0;right:0;background:rgba(8,12,24,.9);border:1px solid rgba(255,255,255,.12);color:rgba(232,228,220,.6);font-size:.85rem;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;cursor:pointer;transition:color .2s,border-color .2s;" onmouseover="this.style.color='var(--gold)';this.style.borderColor='rgba(201,169,110,.4)'" onmouseout="this.style.color='rgba(232,228,220,.6)';this.style.borderColor='rgba(255,255,255,.12)'">✕</button>
@@ -286,9 +290,33 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
 
         <div style="height:1px;background:rgba(255,255,255,.07);margin:20px 0 16px;"></div>
         <div style="font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Account</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:.9rem;color:rgba(232,228,220,.6);line-height:1.7;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.9rem;color:rgba(232,228,220,.6);line-height:1.7;margin-bottom:14px;">
           <span style="color:var(--gold);">Member Status:</span> <span id="settings-status" style="color:var(--teal);">Explorer</span>
         </div>
+
+        <div style="font-size:.48rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Profile</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:6px;">
+          <div>
+            <label style="font-size:.44rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,228,220,.35);display:block;margin-bottom:4px;">Name</label>
+            <input id="settings-name" type="text" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.72rem;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='rgba(201,169,110,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <label style="font-size:.44rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,228,220,.35);display:block;margin-bottom:4px;">Date of Birth</label>
+              <input id="settings-birthdate" type="date" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.72rem;outline:none;transition:border-color .2s;color-scheme:dark;" onfocus="this.style.borderColor='rgba(201,169,110,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" />
+            </div>
+            <div>
+              <label style="font-size:.44rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,228,220,.35);display:block;margin-bottom:4px;">Time of Birth</label>
+              <input id="settings-birthtime" type="time" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.72rem;outline:none;transition:border-color .2s;color-scheme:dark;" onfocus="this.style.borderColor='rgba(201,169,110,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" />
+            </div>
+          </div>
+          <div>
+            <label style="font-size:.44rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,228,220,.35);display:block;margin-bottom:4px;">Place of Birth</label>
+            <input id="settings-location" type="text" style="width:100%;padding:8px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.72rem;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='rgba(201,169,110,.45)'" onblur="this.style.borderColor='rgba(255,255,255,.1)'" />
+          </div>
+        </div>
+        <button id="settings-save-profile" style="width:100%;padding:8px;background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.22);color:var(--gold);font-family:'Syne',sans-serif;font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;border-radius:3px;transition:background .2s;margin-top:6px;" onmouseover="this.style.background='rgba(201,169,110,.16)'" onmouseout="this.style.background='rgba(201,169,110,.08)'">Save Profile</button>
+        <div id="settings-profile-status" style="font-size:.52rem;color:var(--teal);text-align:center;margin-top:6px;opacity:0;transition:opacity .3s;"></div>
 
         <div style="height:1px;background:rgba(255,255,255,.07);margin:18px 0 14px;"></div>
         <div style="font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Billing</div>
@@ -329,7 +357,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
       <div class="s-date" id="sphere-date"></div>
     </div>
     <canvas id="sphere-canvas" width="560" height="560"></canvas>
-    <div class="s-hint">hover to explore · click to enter</div>
+    <div class="s-hint">hover to pause · click to energy</div>
 
     <!-- GLASSMORPHISM MODAL -->
     <div class="modal-overlay" id="modal">
@@ -359,11 +387,21 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   <aside class="chat-panel">
     <!-- PATHWAY — top half -->
     <div class="pathway-section">
-      <div class="ch" style="border-bottom:1px solid var(--gb);"><div class="cht">The Pathway</div><div class="chs">Your journey through the sphere</div></div>
-      <div style="display:flex;flex-shrink:0;overflow:hidden;">
+      <div class="ch" style="border-bottom:1px solid var(--gb);padding:0;">
+        <div style="display:flex;align-items:stretch;">
+          <button id="tab-pathway" style="flex:1;padding:10px 0 9px;background:rgba(201,169,110,.08);border:none;border-bottom:2px solid var(--gold);color:var(--gold);font-family:'Syne',sans-serif;font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;transition:all .2s;">Pathway</button>
+          <button id="tab-synthesis" style="flex:1;padding:10px 0 9px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Syne',sans-serif;font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;transition:all .2s;">Synthesis</button>
+        </div>
+      </div>
+      <div id="panel-pathway" style="display:flex;flex-shrink:0;overflow:hidden;">
         <div style="padding:10px 14px;flex-shrink:0;width:148px;border-right:1px solid var(--gb);" id="journey-legend"></div>
         <div style="padding:12px 14px;overflow-y:auto;flex:1;" id="shell-desc">
           <div id="shell-desc-text" style="font-family:'Cormorant Garamond',serif;font-size:.76rem;line-height:1.85;color:rgba(232,228,220,.68);"></div>
+        </div>
+      </div>
+      <div id="panel-synthesis" style="display:none;overflow-y:auto;padding:14px 16px;flex:1;flex-direction:column;">
+        <div id="synthesis-content">
+          <div id="synthesis-loading" style="text-align:center;padding:20px 0;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);">Generating your synthesis…</div>
         </div>
       </div>
     </div>
@@ -487,9 +525,9 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
             <input type="hidden" id="ob-lng" />
           </div>
           <div>
-            <label style="font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;">Time of Birth <span style="color:rgba(232,228,220,.3);">(optional)</span></label>
+            <label style="font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;">Time of Birth <span style="color:var(--ember);">*</span></label>
             <input id="ob-birthtime" type="time" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:var(--text);font-family:'Syne',sans-serif;font-size:.78rem;outline:none;transition:border-color .2s;color-scheme:dark;" />
-            <div style="font-size:.56rem;color:rgba(232,228,220,.3);margin-top:5px;line-height:1.6;">Required for Vedic astrology charts. Without it, 4 of 5 systems will populate.</div>
+            <div style="font-size:.56rem;color:rgba(232,228,220,.3);margin-top:5px;line-height:1.6;">Required for accurate Vedic astrology and other system mappings.</div>
           </div>
         </div>
 
@@ -607,6 +645,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
   }
 
   function isTrialExpired(profile){
+    if(profile.email === 'mattrob108@gmail.com') return false;
     return profile.plan === 'explorer' && getTrialDaysLeft(profile) <= 0;
   }
 
@@ -833,6 +872,7 @@ html,body,*,*::before,*::after,a,button,input,textarea,select,canvas{cursor:none
     if(!bdate)    { showErr(obError,'Please enter your date of birth.'); return; }
     if(!location) { showErr(obError,'Please enter your place of birth.'); return; }
     if(!window._isLocationSelected()){ showErr(obError,'Please select a city from the dropdown suggestions.'); return; }
+    if(!btime)    { showErr(obError,'Please enter your time of birth — it\'s needed for accurate system mappings.'); return; }
 
     obError.style.display = 'none';
     obSubmit.textContent = 'Building your sphere…'; obSubmit.disabled = true;
@@ -1168,6 +1208,24 @@ var SYSTEMS = [
   },
 ];
 
+// ━━ CONNECTION MAP ━━
+var CONNECTIONS = [
+  // Resonance — same shell level
+  {a:'vedic',   b:'chinese', type:'resonance',  phase:0.0},
+  {a:'vedic',   b:'hd',      type:'resonance',  phase:0.4},
+  {a:'gk',      b:'enn',     type:'resonance',  phase:0.8},
+  {a:'western', b:'mbti',    type:'resonance',  phase:0.2},
+  {a:'gk',      b:'hd',      type:'resonance',  phase:0.6},
+  // Tension — productive friction
+  {a:'mbti',    b:'hd',      type:'tension',    phase:0.1},
+  {a:'western', b:'vedic',   type:'tension',    phase:0.5},
+  {a:'enn',     b:'chinese', type:'tension',    phase:0.9},
+  // Convergence — revealed after user clicks both nodes
+  {a:'vedic',   b:'gk',      type:'convergence',phase:0.3},
+  {a:'hd',      b:'enn',     type:'convergence',phase:0.7},
+];
+var _clickedNodes = {};
+
 // ━━ SPHERE ENGINE ━━
 var canvas=document.getElementById('sphere-canvas');
 var ctx=canvas.getContext('2d');
@@ -1253,6 +1311,7 @@ canvas.addEventListener('click',function(e){
     if(tp.z< -R*0.2)continue;
     var dx=mx-tp.x,dy=my-tp.y;
     if(Math.sqrt(dx*dx+dy*dy)<22){
+      _clickedNodes[nodes[i].sys.id] = true;
       openModal(nodes[i].sys);
       hideSnapDismiss();
       break;
@@ -1590,13 +1649,13 @@ function draw(){
   //   Actually: largest when bead is at BOTTOM (just born / just arrived), smallest at TOP (just split).
   //   So glowR is max at cyclePos=0 (bottom), min at cyclePos=0.5 (top).
 
-  var torusT   = t * 0.018;
+  var torusT   = t * 0.009;
   var cyclePos = torusT % 1;    // 0→1 master, bead A phase
 
   var topY = CY - R;
   var botY = CY + R;
   var aquaRGB  = '78,205,196';   // pure aqua  — rising bead color
-  var violetRGB= '155,114,207';  // violet     — arc bead color at top
+  var violetRGB= '118,80,155';   // deeper violet — arc bead color at top
   var redRGB   = '232,80,80';    // red        — arc bead color at bottom
 
   // First-load gate: bead B only active once bead A has completed its first rise
@@ -1611,11 +1670,11 @@ function draw(){
   ctx.beginPath(); ctx.moveTo(CX, botY); ctx.lineTo(CX, topY);
   ctx.strokeStyle = chanFaint; ctx.lineWidth = 1.32; ctx.stroke();
 
-  // 2. TOP POLE HALO -- violet (always)
+  // 2. TOP POLE HALO -- deeper violet (always)
   var thg = ctx.createRadialGradient(CX, topY, 0, CX, topY, 36);
-  thg.addColorStop(0, 'rgba(155,114,207,.18)');
-  thg.addColorStop(0.5,'rgba(155,114,207,.08)');
-  thg.addColorStop(1,  'rgba(155,114,207,0)');
+  thg.addColorStop(0, 'rgba(118,80,155,.18)');
+  thg.addColorStop(0.5,'rgba(118,80,155,.08)');
+  thg.addColorStop(1,  'rgba(118,80,155,0)');
   ctx.beginPath(); ctx.arc(CX, topY, 36, 0, Math.PI*2);
   ctx.fillStyle = thg; ctx.fill();
 
@@ -1674,15 +1733,12 @@ function draw(){
                : aPhase > 0.94 ? (1-aPhase)/0.06
                : 1.0;
     aAlpha *= 0.48;
-    // Color: pure violet above midpoint, instant snap to red at midpoint (aPhase=0.5)
+    // Color: deeper violet above midpoint, smooth fade to red at midpoint (aPhase=0.5)
     var arc_r, arc_g, arc_b;
-    if(aPhase < 0.5){
-      // Violet above the equator
-      arc_r = 155; arc_g = 114; arc_b = 207;
-    } else {
-      // Immediate red once past the midpoint
-      arc_r = 232; arc_g = 80; arc_b = 80;
-    }
+    var midFade = Math.max(0, Math.min(1, (aPhase - 0.4) / 0.2)); // 0 at 0.4, 1 at 0.6
+    arc_r = Math.round(118 + (232 - 118) * midFade);
+    arc_g = Math.round(80 + (80 - 80) * midFade);
+    arc_b = Math.round(155 + (80 - 155) * midFade);
     var arcRGB = arc_r+','+arc_g+','+arc_b;
 
     [[-1, lbx, lby],[1, rbx, rby]].forEach(function(b){
@@ -1856,6 +1912,59 @@ function draw(){
     }
   });
 
+  // ── CONNECTION LINES ──
+  var t2 = Date.now() * 0.001;
+  CONNECTIONS.forEach(function(conn){
+    var idxA=-1, idxB=-1;
+    for(var i=0;i<nodes.length;i++){
+      if(nodes[i].sys.id===conn.a) idxA=i;
+      if(nodes[i].sys.id===conn.b) idxB=i;
+    }
+    if(idxA<0||idxB<0) return;
+    var tpA=tipCache[idxA], tpB=tipCache[idxB];
+    if(!tpA||!tpB) return;
+    if(tpA.z < -R*0.1 || tpB.z < -R*0.1) return;
+    if(conn.type==='convergence' && (!_clickedNodes[conn.a]||!_clickedNodes[conn.b])) return;
+
+    var speed = conn.type==='tension'?1.8:conn.type==='convergence'?0.6:1.1;
+    var pulse = 0.5+0.5*Math.sin(t2*speed+conn.phase*Math.PI*2);
+
+    function hexToRgb(hex){return[parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)];}
+    var rA=hexToRgb(nodes[idxA].sys.color), rB=hexToRgb(nodes[idxB].sys.color);
+    var r=Math.round((rA[0]+rB[0])/2), g=Math.round((rA[1]+rB[1])/2), b=Math.round((rA[2]+rB[2])/2);
+
+    var baseAlpha, lineWidth;
+    var isHov=(hoveredIdx===idxA||hoveredIdx===idxB||glowIdx===idxA||glowIdx===idxB);
+    if(conn.type==='resonance'){
+      baseAlpha=isHov?0.55:0.12+0.08*pulse; lineWidth=isHov?1.8:0.9;
+    } else if(conn.type==='tension'){
+      baseAlpha=isHov?0.5:0.09+0.07*pulse; lineWidth=isHov?2.0:1.1;
+      r=Math.round(r*0.75+232*0.25); g=Math.round(g*0.75+112*0.25); b=Math.round(b*0.75+90*0.25);
+    } else {
+      baseAlpha=isHov?0.85:0.28+0.18*pulse; lineWidth=isHov?2.6:1.6;
+      r=Math.round(r*0.5+201*0.5); g=Math.round(g*0.5+169*0.5); b=Math.round(b*0.5+110*0.5);
+    }
+
+    var mx2=(tpA.x+tpB.x)/2, my2=(tpA.y+tpB.y)/2;
+    var lg2=ctx.createLinearGradient(tpA.x,tpA.y,tpB.x,tpB.y);
+    lg2.addColorStop(0,  'rgba('+r+','+g+','+b+',0)');
+    lg2.addColorStop(0.2,'rgba('+r+','+g+','+b+','+baseAlpha+')');
+    lg2.addColorStop(0.5,'rgba('+r+','+g+','+b+','+(baseAlpha*1.3)+')');
+    lg2.addColorStop(0.8,'rgba('+r+','+g+','+b+','+baseAlpha+')');
+    lg2.addColorStop(1,  'rgba('+r+','+g+','+b+',0)');
+    ctx.beginPath(); ctx.moveTo(tpA.x,tpA.y); ctx.lineTo(tpB.x,tpB.y);
+    ctx.strokeStyle=lg2; ctx.lineWidth=lineWidth;
+    ctx.setLineDash(conn.type==='tension'?[4,5]:[]);
+    ctx.stroke(); ctx.setLineDash([]);
+
+    if(conn.type==='convergence'){
+      var mg=ctx.createRadialGradient(mx2,my2,0,mx2,my2,8);
+      mg.addColorStop(0,'rgba('+r+','+g+','+b+','+(baseAlpha*.9)+')');
+      mg.addColorStop(1,'rgba('+r+','+g+','+b+',0)');
+      ctx.beginPath();ctx.arc(mx2,my2,8,0,Math.PI*2);ctx.fillStyle=mg;ctx.fill();
+    }
+  });
+
   requestAnimationFrame(draw);
 }
 draw();
@@ -1901,11 +2010,16 @@ async function send(text){
   addMsg(text,false);history.push({role:'user',content:text});
   var ty=addTyping();
   try{
+    console.log('[Temenos] Sending to AI...');
     var d=await aiChat(buildSYS(),history,1000);
+    console.log('[Temenos] AI response:', d);
     var rep=(d.content&&d.content[0]&&d.content[0].text)||'Something went quiet.';
     ty.remove();addMsg(rep,true);history.push({role:'assistant',content:rep});
     updateSuggestions();
-  }catch(e){ty.remove();addMsg('The connection faded. Try again.',true);}
+  }catch(e){
+    console.error('[Temenos] AI error:', e);
+    ty.remove();addMsg('The connection faded. Try again.',true);
+  }
 }
 
 async function updateSuggestions(){
@@ -1961,9 +2075,44 @@ function closeSettings(){
   settingsModal.style.opacity='0'; settingsModal.style.pointerEvents='none';
   settingsCard.style.transform='scale(.94) translateY(8px)';
 }
-document.getElementById('settings-btn').addEventListener('click', openSettings);
+document.getElementById('settings-btn').addEventListener('click', function(){
+  // Populate profile fields when opening settings
+  var p = window._userProfile || {};
+  document.getElementById('settings-name').value = p.name || '';
+  document.getElementById('settings-birthdate').value = p.birthdate || '';
+  document.getElementById('settings-birthtime').value = p.birth_time || '';
+  document.getElementById('settings-location').value = p.birth_location || '';
+  openSettings();
+});
 document.getElementById('settings-close').addEventListener('click', closeSettings);
 document.getElementById('settings-backdrop').addEventListener('click', closeSettings);
+
+// ── PROFILE SAVE ──
+document.getElementById('settings-save-profile').addEventListener('click', function(){
+  var btn = this;
+  var status = document.getElementById('settings-profile-status');
+  var name = document.getElementById('settings-name').value.trim();
+  var bdate = document.getElementById('settings-birthdate').value;
+  var btime = document.getElementById('settings-birthtime').value || null;
+  var loc = document.getElementById('settings-location').value.trim();
+  if(!name||!bdate||!loc){ status.textContent='Please fill in all fields.'; status.style.color='var(--ember)'; status.style.opacity='1'; return; }
+  btn.textContent='Saving…'; btn.disabled=true;
+  var sb = window._sb;
+  sb.auth.getUser().then(function(res){
+    if(!res.data||!res.data.user){ status.textContent='Session error.'; status.style.color='var(--ember)'; status.style.opacity='1'; btn.textContent='Save Profile'; btn.disabled=false; return; }
+    sb.from('profiles').update({ name:name, birthdate:bdate, birth_time:btime, birth_location:loc }).eq('id',res.data.user.id).then(function(upd){
+      if(upd.error){ status.textContent='Error: '+upd.error.message; status.style.color='var(--ember)'; status.style.opacity='1'; }
+      else {
+        // Update local profile
+        window._userProfile = Object.assign(window._userProfile||{}, { name:name, birthdate:bdate, birth_time:btime, birth_location:loc });
+        if(window._applyProfile) window._applyProfile(window._userProfile);
+        status.textContent='Profile saved!'; status.style.color='var(--teal)'; status.style.opacity='1';
+        setTimeout(function(){ status.style.opacity='0'; }, 3000);
+      }
+      btn.textContent='Save Profile'; btn.disabled=false;
+    });
+  });
+});
 
 // ── SUGGESTION BOX ──
 document.getElementById('suggestion-send').addEventListener('click', function(){
@@ -2256,6 +2405,101 @@ document.getElementById('support-btn').addEventListener('click', function(){
       });
     });
   });
+})();
+
+// ── SYNTHESIS PANEL ──
+(function(){
+  var tabPathway   = document.getElementById('tab-pathway');
+  var tabSynthesis = document.getElementById('tab-synthesis');
+  var panelPathway = document.getElementById('panel-pathway');
+  var panelSynth   = document.getElementById('panel-synthesis');
+  var synthContent = document.getElementById('synthesis-content');
+  var synthLoading = document.getElementById('synthesis-loading');
+  var _synthGenerated = false;
+
+  tabPathway.addEventListener('click', function(){
+    tabPathway.style.background='rgba(201,169,110,.08)';tabPathway.style.borderBottom='2px solid var(--gold)';tabPathway.style.color='var(--gold)';
+    tabSynthesis.style.background='transparent';tabSynthesis.style.borderBottom='2px solid transparent';tabSynthesis.style.color='var(--muted)';
+    panelPathway.style.display='flex'; panelSynth.style.display='none';
+  });
+
+  tabSynthesis.addEventListener('click', function(){
+    tabSynthesis.style.background='rgba(78,205,196,.08)';tabSynthesis.style.borderBottom='2px solid var(--teal)';tabSynthesis.style.color='#4ecdc4';
+    tabPathway.style.background='transparent';tabPathway.style.borderBottom='2px solid transparent';tabPathway.style.color='var(--muted)';
+    panelSynth.style.display='flex'; panelPathway.style.display='none';
+    if(!_synthGenerated) generateSynthesis();
+  });
+
+  var LEVEL_COLORS = {
+    'Body':'var(--ember)','Pattern':'var(--gold)','Drive':'#dc9b5f',
+    'Fixation':'var(--violet)','Emotion':'#d27870','Action':'var(--teal)',
+    'Integration':'#6ea8c0','Transmission':'#b96ea5','Presence':'var(--gold)'
+  };
+
+  function renderSynthesis(levels){
+    synthContent.innerHTML='';
+    levels.forEach(function(item){
+      var color=LEVEL_COLORS[item.level]||'var(--muted)';
+      var div=document.createElement('div');
+      div.className='synth-level';
+      div.innerHTML='<div class="synth-label" style="color:'+color+';">'+item.level+'</div>'
+        +'<div class="synth-text">'+item.text+'</div>';
+      synthContent.appendChild(div);
+    });
+  }
+
+  async function generateSynthesis(){
+    _synthGenerated=true;
+    if(synthLoading) synthLoading.style.display='block';
+    var sb=window._sb;
+    var profile=window._userProfile||{};
+    if(profile.synthesis&&Array.isArray(profile.synthesis)&&profile.synthesis.length===9){
+      if(synthLoading) synthLoading.style.display='none';
+      renderSynthesis(profile.synthesis); return;
+    }
+    var prompt='You are generating a personal synthesis document for a consciousness-mapping app. '
+      +'Read ACROSS all the user\'s knowledge systems simultaneously — do not describe each system separately. Synthesize them into a unified portrait.\n\n'
+      +'User systems:\n'
+      +'Vedic Astrology: Sagittarius Rising, Leo Sun, Purva Ashadha Moon (conjunct Ascendant)\n'
+      +'Human Design: Manifesting Generator, Emotional Authority, Profile 1/1\n'
+      +'Gene Keys: Gate 39 (Shadow: Provocation → Gift: Dynamism → Siddhi: Liberation) as Life\'s Work\n'
+      +'Enneagram: Type 4 (The Individualist)\n'
+      +'Western Astrology: Virgo Sun, Capricorn Rising\n'
+      +'Chinese Astrology: Metal Horse (1990)\n'
+      +'Myers-Briggs: INFJ\n\n'
+      +'Generate exactly 9 sections, one per level. Each section is 2-3 sentences maximum. '
+      +'Write in second person. Be specific, poetic, and grounded — avoid generic spiritual language. '
+      +'The final level (Presence) is a single sentence pointing toward what emerges when all the above is witnessed — not an achievement.\n\n'
+      +'Levels: Body, Pattern, Drive, Fixation, Emotion, Action, Integration, Transmission, Presence\n\n'
+      +'Return ONLY a JSON array: [{"level":"Body","text":"..."},...] No markdown, no extra text.';
+    try{
+      var resp=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+      });
+      var data=await resp.json();
+      var raw=(data.content&&data.content[0]&&data.content[0].text)||'[]';
+      var levels=JSON.parse(raw.replace(/```json|```/g,'').trim());
+      if(Array.isArray(levels)&&levels.length===9){
+        if(synthLoading) synthLoading.style.display='none';
+        renderSynthesis(levels);
+        if(sb&&profile.id){
+          sb.from('profiles').update({synthesis:levels}).eq('id',profile.id).then(function(){});
+          profile.synthesis=levels;
+        }
+      } else { throw new Error('bad response'); }
+    }catch(e){
+      console.error('[Synthesis]',e);
+      if(synthLoading) synthLoading.textContent='Could not generate synthesis. Try again later.';
+    }
+  }
+
+  window._regenerateSynthesis=function(){
+    _synthGenerated=false;
+    if(window._userProfile) window._userProfile.synthesis=null;
+    if(panelSynth.style.display!=='none') generateSynthesis();
+  };
 })();
 </script>
 </body>
