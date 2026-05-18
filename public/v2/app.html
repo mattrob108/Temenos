@@ -91,7 +91,7 @@
     const CONFIG = window.TEMENOS_V2_CONFIG || {};
     const HAS_SUPABASE = !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_KEY &&
       !CONFIG.SUPABASE_URL.includes('your-project'));
-    const supabase = HAS_SUPABASE
+    const supabaseClient = HAS_SUPABASE
       ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY)
       : null;
     const SYSTEMS = window.TEMENOS_SYSTEMS;
@@ -165,28 +165,28 @@
       const [user, setUser] = useState(null);
       const [loading, setLoading] = useState(true);
       useEffect(() => {
-        if (!supabase) { setLoading(false); return; }
-        supabase.auth.getUser().then(({ data }) => {
+        if (!supabaseClient) { setLoading(false); return; }
+        supabaseClient.auth.getUser().then(({ data }) => {
           setUser(data?.user || null);
           setLoading(false);
         });
-        const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+        const { data: sub } = supabaseClient.auth.onAuthStateChange((_evt, session) => {
           setUser(session?.user || null);
         });
         return () => sub?.subscription?.unsubscribe?.();
       }, []);
       const sendMagicLink = useCallback(async (email) => {
-        if (!supabase) throw new Error('Supabase not configured. Copy config.example.js to config.js and add your keys.');
+        if (!supabaseClient) throw new Error('Supabase not configured. Copy config.example.js to config.js and add your keys.');
         const redirect = CONFIG.AUTH_REDIRECT || (window.location.origin + window.location.pathname);
-        const { error } = await supabase.auth.signInWithOtp({
+        const { error } = await supabaseClient.auth.signInWithOtp({
           email,
           options: { emailRedirectTo: redirect },
         });
         if (error) throw error;
       }, []);
       const signOut = useCallback(async () => {
-        if (!supabase) return;
-        await supabase.auth.signOut();
+        if (!supabaseClient) return;
+        await supabaseClient.auth.signOut();
       }, []);
       return { user, loading, sendMagicLink, signOut };
     }
@@ -198,11 +198,11 @@
       const [loading, setLoading] = useState(true);
 
       const refresh = useCallback(async () => {
-        if (!user || !supabase) { setLoading(false); return; }
+        if (!user || !supabaseClient) { setLoading(false); return; }
         setLoading(true);
-        const { data: p } = await supabase.from('users_v2').select('*').eq('id', user.id).maybeSingle();
+        const { data: p } = await supabaseClient.from('users_v2').select('*').eq('id', user.id).maybeSingle();
         setProfile(p || null);
-        const { data: s } = await supabase.from('user_systems').select('*').eq('user_id', user.id);
+        const { data: s } = await supabaseClient.from('user_systems').select('*').eq('user_id', user.id);
         setSystems(s || []);
         setLoading(false);
       }, [user]);
@@ -243,7 +243,7 @@
     }
 
     async function upsertSystem(userId, payload) {
-      if (!supabase) return null;
+      if (!supabaseClient) return null;
       const row = {
         user_id: userId,
         system_name: payload.system_name,
@@ -255,7 +255,7 @@
         fallback_source: payload.fallback_source,
         fallback_active: payload.fallback_active,
       };
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('user_systems')
         .upsert(row, { onConflict: 'user_id,system_name' })
         .select()
@@ -335,8 +335,8 @@
         setError(null); setWorking(true);
         try {
           // Upsert users_v2 row
-          if (supabase) {
-            const { error: upErr } = await supabase.from('users_v2').upsert({
+          if (supabaseClient) {
+            const { error: upErr } = await supabaseClient.from('users_v2').upsert({
               id: user.id,
               email: user.email,
               birth_date: date,
@@ -686,8 +686,8 @@
       async function save() {
         setWorking(true); setError(null); setOkMsg(null);
         try {
-          if (supabase) {
-            const { error: e1 } = await supabase.from('users_v2').update({
+          if (supabaseClient) {
+            const { error: e1 } = await supabaseClient.from('users_v2').update({
               birth_date: date, birth_time: time, birth_place: place,
               birth_time_is_guess: timeIsGuess,
               profile_updated_at: new Date().toISOString(),
@@ -764,8 +764,8 @@
 
       async function handleUpgrade() {
         // MVP: flip the boolean directly. Replace with Stripe checkout in production.
-        if (supabase) {
-          await supabase.from('users_v2').update({
+        if (supabaseClient) {
+          await supabaseClient.from('users_v2').update({
             subscription_active: true,
             subscription_tier: 'pro',
           }).eq('id', user.id);
