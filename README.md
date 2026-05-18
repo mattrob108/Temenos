@@ -29,17 +29,33 @@ A premium spiritual self-discovery app featuring an interactive 3D sphere, AI co
 ## Project structure
 
 ```
-public/           Static HTML pages
-  index.html      Marketing / landing page
-  app.html        Main app (auth-gated)
-  sphere.html     Sphere sandbox (no auth)
+public/                     Static HTML pages
+  index.html                v1 Marketing / landing page
+  app.html                  v1 Main app (auth-gated, sphere)
+  sphere.html               v1 Sphere sandbox (no auth)
   js/
-    config.js       Runtime keys (gitignored)
-    config.example.js  Template for config.js
-supabase/         Database migrations, edge functions
-.env.example      Environment variable template (for future server-side use)
-CLAUDE.md         AI session context
+    config.js               v1 runtime keys (gitignored)
+    config.example.js       v1 config template
+  v2/                       v2 Mandala platform
+    index.html              v2 landing page
+    app.html                v2 React single-file app (mandala, signup, profile, settings, paywall)
+    js/config.example.js    v2 config template (copy to v2/js/config.js)
+    data/systems.js         v2 fallback data + system catalogue
+supabase/                   Database migrations, edge functions
+.env.example                Environment variable template (for future server-side use)
+CLAUDE.md                   AI session context
 ```
+
+## v2 Quick start
+
+```bash
+cp public/v2/js/config.example.js public/v2/js/config.js   # fill in Supabase keys
+npx serve public
+# open http://localhost:3000/v2/         for landing
+# open http://localhost:3000/v2/app.html for the mandala app
+```
+
+Without `config.js`, v2 runs in **demo mode** with mock data — no auth required, no persistence.
 
 ## Tech stack
 

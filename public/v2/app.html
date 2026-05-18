@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temenos — Your Mandala</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Cormorant Garamond"', 'serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            void: '#04050a', navy: '#0a0e27',
+            gold: '#c9a96e', teal: '#4ecdc4',
+            violet: '#9b72cf', ember: '#e8705a',
+            ink: '#e8e4dc',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- React + Babel (CDN — single-file artifact, no build step) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Runtime config (gitignored). If missing, app falls back to demo mode. -->
+  <script src="js/config.js" onerror="window.__TEMENOS_NO_CONFIG=true"></script>
+  <script src="data/systems.js"></script>
+
+  <style>
+    html, body, #root { height: 100%; background: #04050a; color: #e8e4dc; }
+    body { font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .display-title { font-family: 'Cormorant Garamond', serif; font-weight: 400; letter-spacing: 0.04em; }
+    .small-caps { letter-spacing: 0.25em; text-transform: uppercase; font-size: 0.72rem; }
+    .text-muted { color: rgba(232,228,220,0.55); }
+    .glass {
+      background: rgba(232, 228, 220, 0.04);
+      border: 1px solid rgba(232, 228, 220, 0.08);
+      backdrop-filter: blur(10px);
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #c9a96e, #b8945e);
+      color: #04050a; font-weight: 600; letter-spacing: 0.03em;
+      transition: transform 200ms, box-shadow 200ms;
+    }
+    .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 12px 28px -10px rgba(201,169,110,0.45); }
+    .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-ghost { border: 1px solid rgba(201,169,110,0.4); color: #c9a96e; transition: all 200ms; }
+    .btn-ghost:hover { background: rgba(201,169,110,0.08); }
+    .cosmic-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .content-z { position: relative; z-index: 1; }
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 30;
+      background: rgba(4, 5, 10, 0.7); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .petal-pulse:hover { filter: drop-shadow(0 0 12px currentColor); }
+    .pulse-ring {
+      animation: pulse-ring 2.4s infinite ease-out;
+      transform-origin: center;
+    }
+    @keyframes pulse-ring {
+      0%   { transform: scale(0.92); opacity: 0.6; }
+      80%  { transform: scale(1.08); opacity: 0; }
+      100% { transform: scale(1.08); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="cosmic" class="cosmic-canvas"></canvas>
+  <div id="root" class="content-z"></div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+    // ---------- Config & Supabase client ----------
+    const CONFIG = window.TEMENOS_V2_CONFIG || {};
+    const HAS_SUPABASE = !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_KEY &&
+      !CONFIG.SUPABASE_URL.includes('your-project'));
+    const supabase = HAS_SUPABASE
+      ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY)
+      : null;
+    const SYSTEMS = window.TEMENOS_SYSTEMS;
+
+    // ---------- Cosmic backdrop (Canvas starfield + drifting nebula) ----------
+    function CosmicBackdrop() {
+      useEffect(() => {
+        const canvas = document.getElementById('cosmic');
+        const ctx = canvas.getContext('2d');
+        let raf = 0, w = 0, h = 0;
+        const stars = [];
+        const nebulae = [
+          { x: 0.2, y: 0.25, r: 0.45, color: 'rgba(155,114,207,0.10)' },
+          { x: 0.8, y: 0.7,  r: 0.50, color: 'rgba(78,205,196,0.08)' },
+          { x: 0.5, y: 1.0,  r: 0.60, color: 'rgba(232,112,90,0.07)' },
+        ];
+        function resize() {
+          w = canvas.width = window.innerWidth * devicePixelRatio;
+          h = canvas.height = window.innerHeight * devicePixelRatio;
+          canvas.style.width = window.innerWidth + 'px';
+          canvas.style.height = window.innerHeight + 'px';
+        }
+        function init() {
+          stars.length = 0;
+          const count = Math.min(220, Math.floor((window.innerWidth * window.innerHeight) / 9000));
+          for (let i = 0; i < count; i++) {
+            stars.push({
+              x: Math.random() * w,
+              y: Math.random() * h,
+              r: Math.random() * 1.4 + 0.3,
+              a: Math.random() * Math.PI * 2,
+              s: 0.5 + Math.random() * 1.2,
+            });
+          }
+        }
+        function draw() {
+          ctx.clearRect(0, 0, w, h);
+          // nebulae
+          for (const n of nebulae) {
+            const grad = ctx.createRadialGradient(
+              n.x * w, n.y * h, 0, n.x * w, n.y * h, n.r * Math.max(w, h)
+            );
+            grad.addColorStop(0, n.color);
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+          }
+          // stars
+          const t = Date.now() / 1000;
+          for (const st of stars) {
+            const tw = 0.4 + (Math.sin(t * st.s + st.a) * 0.5 + 0.5) * 0.6;
+            ctx.globalAlpha = tw;
+            ctx.beginPath();
+            ctx.fillStyle = '#fff';
+            ctx.arc(st.x, st.y, st.r * devicePixelRatio, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+          raf = requestAnimationFrame(draw);
+        }
+        resize(); init(); draw();
+        const onResize = () => { resize(); init(); };
+        window.addEventListener('resize', onResize);
+        return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onResize); };
+      }, []);
+      return null;
+    }
+
+    // ---------- Auth hook ----------
+    function useAuth() {
+      const [user, setUser] = useState(null);
+      const [loading, setLoading] = useState(true);
+      useEffect(() => {
+        if (!supabase) { setLoading(false); return; }
+        supabase.auth.getUser().then(({ data }) => {
+          setUser(data?.user || null);
+          setLoading(false);
+        });
+        const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+          setUser(session?.user || null);
+        });
+        return () => sub?.subscription?.unsubscribe?.();
+      }, []);
+      const sendMagicLink = useCallback(async (email) => {
+        if (!supabase) throw new Error('Supabase not configured. Copy config.example.js to config.js and add your keys.');
+        const redirect = CONFIG.AUTH_REDIRECT || (window.location.origin + window.location.pathname);
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: redirect },
+        });
+        if (error) throw error;
+      }, []);
+      const signOut = useCallback(async () => {
+        if (!supabase) return;
+        await supabase.auth.signOut();
+      }, []);
+      return { user, loading, sendMagicLink, signOut };
+    }
+
+    // ---------- User profile + systems hook ----------
+    function useProfile(user) {
+      const [profile, setProfile] = useState(null);
+      const [systems, setSystems] = useState([]);
+      const [loading, setLoading] = useState(true);
+
+      const refresh = useCallback(async () => {
+        if (!user || !supabase) { setLoading(false); return; }
+        setLoading(true);
+        const { data: p } = await supabase.from('users_v2').select('*').eq('id', user.id).maybeSingle();
+        setProfile(p || null);
+        const { data: s } = await supabase.from('user_systems').select('*').eq('user_id', user.id);
+        setSystems(s || []);
+        setLoading(false);
+      }, [user]);
+
+      useEffect(() => { refresh(); }, [refresh]);
+
+      return { profile, systems, loading, refresh, setProfile, setSystems };
+    }
+
+    // ---------- "External API" abstraction (mock — falls back to local data) ----------
+    // In production, swap fetchSystemData() to hit astro-api.io etc. The shape returned
+    // (snapshot + audit metadata) is what the rest of the app depends on.
+    async function fetchSystemData(systemKey, birth, userValue) {
+      const start = Date.now();
+      // Try a real API here if you have keys. We always fall back gracefully.
+      const useFallback = true; // flip to false once you wire real APIs
+      let snapshot, sourceApi, fallbackActive, httpStatus;
+      if (useFallback) {
+        snapshot = SYSTEMS.compute(systemKey, birth, userValue);
+        sourceApi = 'temenos.fallback.v1';
+        fallbackActive = true;
+        httpStatus = 200;
+      }
+      return {
+        system_name: systemKey,
+        user_value: snapshot.primary,
+        data_snapshot: snapshot,
+        source_api: sourceApi,
+        fetched_date: new Date().toISOString(),
+        is_stale: false,
+        fallback_source: fallbackActive ? 'systems.js' : null,
+        fallback_active: fallbackActive,
+        audit: {
+          http_status: httpStatus,
+          response_time_ms: Date.now() - start,
+        },
+      };
+    }
+
+    async function upsertSystem(userId, payload) {
+      if (!supabase) return null;
+      const row = {
+        user_id: userId,
+        system_name: payload.system_name,
+        user_value: payload.user_value,
+        data_snapshot: payload.data_snapshot,
+        source_api: payload.source_api,
+        fetched_date: payload.fetched_date,
+        is_stale: payload.is_stale,
+        fallback_source: payload.fallback_source,
+        fallback_active: payload.fallback_active,
+      };
+      const { data, error } = await supabase
+        .from('user_systems')
+        .upsert(row, { onConflict: 'user_id,system_name' })
+        .select()
+        .single();
+      if (error) console.error('upsertSystem error', error);
+      return data;
+    }
+
+    // ---------- Magic-link signup screen ----------
+    function MagicLinkScreen({ onLoginAttempt }) {
+      const [email, setEmail] = useState('');
+      const [sent, setSent] = useState(false);
+      const [error, setError] = useState(null);
+      const [loading, setLoading] = useState(false);
+      async function submit(e) {
+        e.preventDefault();
+        setError(null); setLoading(true);
+        try {
+          await onLoginAttempt(email);
+          setSent(true);
+        } catch (err) {
+          setError(err.message || 'Could not send magic link.');
+        } finally { setLoading(false); }
+      }
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center p-6">
+          <a href="index.html" className="display-title text-3xl text-gold mb-10">Temenos</a>
+          <div className="glass rounded-2xl p-8 max-w-md w-full">
+            <p className="small-caps text-gold text-center mb-3">Welcome</p>
+            <h1 className="display-title text-4xl text-center mb-2">Enter your sacred space</h1>
+            <p className="text-muted text-center mb-8 text-sm">
+              We’ll send a magic link to your email — no password required.
+            </p>
+            {sent ? (
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto rounded-full mb-4 flex items-center justify-center" style={{background:'rgba(78,205,196,0.15)', color:'#4ecdc4'}}>✓</div>
+                <p className="font-medium mb-2">Check your inbox</p>
+                <p className="text-muted text-sm">A sign-in link is on its way to <span className="text-ink">{email}</span>.</p>
+              </div>
+            ) : (
+              <form onSubmit={submit} className="space-y-4">
+                <input
+                  type="email" required value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@somewhere.com"
+                  className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none transition"
+                />
+                <button type="submit" disabled={loading} className="btn-gold w-full py-3 rounded-xl small-caps">
+                  {loading ? 'Sending…' : 'Send magic link'}
+                </button>
+                {error && <p className="text-ember text-sm text-center">{error}</p>}
+                {!HAS_SUPABASE && (
+                  <p className="text-ember text-xs text-center mt-2">
+                    Supabase isn’t configured. Copy <code className="text-gold">js/config.example.js</code> to <code className="text-gold">js/config.js</code> and add your keys.
+                  </p>
+                )}
+              </form>
+            )}
+          </div>
+          <a href="index.html" className="small-caps text-muted mt-6 hover:text-ink">← Back to landing</a>
+        </div>
+      );
+    }
+
+    // ---------- Birth info form (collects + triggers system computation) ----------
+    function BirthInfoForm({ user, onSaved }) {
+      const [date, setDate] = useState('');
+      const [time, setTime] = useState('12:00');
+      const [place, setPlace] = useState('');
+      const [timeIsGuess, setTimeIsGuess] = useState(false);
+      const [working, setWorking] = useState(false);
+      const [error, setError] = useState(null);
+
+      async function submit(e) {
+        e.preventDefault();
+        if (!date || !place) { setError('Birth date and place are required.'); return; }
+        setError(null); setWorking(true);
+        try {
+          // Upsert users_v2 row
+          if (supabase) {
+            const { error: upErr } = await supabase.from('users_v2').upsert({
+              id: user.id,
+              email: user.email,
+              birth_date: date,
+              birth_time: time,
+              birth_place: place,
+              birth_time_is_guess: timeIsGuess,
+              profile_updated_at: new Date().toISOString(),
+            }, { onConflict: 'id' });
+            if (upErr) throw upErr;
+          }
+          // Compute and persist 4 core systems
+          const birth = { birth_date: date, birth_time: time, birth_place: place };
+          const core = SYSTEMS.catalog.filter(s => s.tier === 'core');
+          for (const sys of core) {
+            const payload = await fetchSystemData(sys.key, birth, null);
+            await upsertSystem(user.id, payload);
+          }
+          onSaved();
+        } catch (err) {
+          console.error(err);
+          setError(err.message || 'Something went wrong.');
+        } finally { setWorking(false); }
+      }
+
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center p-6">
+          <a href="index.html" className="display-title text-3xl text-gold mb-10">Temenos</a>
+          <div className="glass rounded-2xl p-8 max-w-lg w-full">
+            <p className="small-caps text-gold text-center mb-3">Step One</p>
+            <h1 className="display-title text-4xl text-center mb-2">Your birth chart</h1>
+            <p className="text-muted text-center text-sm mb-8">
+              These three details unlock your four core systems. Your data is private and never shared.
+            </p>
+            <form onSubmit={submit} className="space-y-5">
+              <div>
+                <label className="small-caps block mb-2">Birth date</label>
+                <input
+                  type="date" required value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="small-caps block mb-2">Birth place</label>
+                <input
+                  type="text" required value={place}
+                  onChange={(e) => setPlace(e.target.value)}
+                  placeholder="City, Country"
+                  className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="small-caps block mb-2">Birth time</label>
+                <input
+                  type="time" value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none transition"
+                />
+                <label className="flex items-center gap-2 mt-3 text-muted text-sm cursor-pointer">
+                  <input type="checkbox" checked={timeIsGuess} onChange={(e) => setTimeIsGuess(e.target.checked)} className="accent-gold" />
+                  This is my best guess — I’ll refine later.
+                </label>
+              </div>
+              <button type="submit" disabled={working} className="btn-gold w-full py-3 rounded-xl small-caps">
+                {working ? 'Calculating your profile…' : 'Reveal my mandala'}
+              </button>
+              {error && <p className="text-ember text-sm text-center">{error}</p>}
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- Mandala (9-fold SVG geometry) ----------
+    function Mandala({ systems, profile, onSelect, onLockedClick }) {
+      const subscribed = !!profile?.subscription_active;
+      const catalog = SYSTEMS.catalog;
+      const systemsByKey = useMemo(() => {
+        const m = {}; for (const s of systems) m[s.system_name] = s; return m;
+      }, [systems]);
+
+      const size = 560, c = size / 2, R = 200, petalR = 56;
+
+      return (
+        <div className="relative w-full flex justify-center">
+          <svg viewBox={`0 0 ${size} ${size}`} className="w-full max-w-[560px] h-auto">
+            {/* Soft halo */}
+            <defs>
+              <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"   stopColor="rgba(201,169,110,0.15)" />
+                <stop offset="70%"  stopColor="rgba(201,169,110,0.02)" />
+                <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+              </radialGradient>
+            </defs>
+            <circle cx={c} cy={c} r={R + petalR + 30} fill="url(#halo)" />
+
+            {/* Inscribed rings */}
+            <circle cx={c} cy={c} r={R + 14} fill="none" stroke="rgba(201,169,110,0.18)" />
+            <circle cx={c} cy={c} r={R - 30} fill="none" stroke="rgba(201,169,110,0.12)" />
+            <circle cx={c} cy={c} r={60}    fill="none" stroke="rgba(201,169,110,0.25)" />
+
+            {/* Connector lines */}
+            {catalog.map((sys, i) => {
+              const angle = (i / 9) * Math.PI * 2 - Math.PI / 2;
+              const x = c + Math.cos(angle) * R;
+              const y = c + Math.sin(angle) * R;
+              return (
+                <line key={'line-' + i} x1={c} y1={c} x2={x} y2={y}
+                      stroke="rgba(232,228,220,0.12)" strokeWidth="1" />
+              );
+            })}
+
+            {/* Petals */}
+            {catalog.map((sys, i) => {
+              const angle = (i / 9) * Math.PI * 2 - Math.PI / 2;
+              const x = c + Math.cos(angle) * R;
+              const y = c + Math.sin(angle) * R;
+              const s = systemsByKey[sys.key];
+              const isPro = sys.tier === 'pro';
+              const isLocked = isPro && !subscribed;
+              const isPopulated = !!s;
+
+              const onClick = () => {
+                if (isLocked) return onLockedClick(sys);
+                onSelect(sys, s);
+              };
+              return (
+                <g key={sys.key}
+                   style={{ cursor: 'pointer', color: sys.color }}
+                   className="petal-pulse"
+                   onClick={onClick}>
+                  {!isLocked && !isPopulated && isPro && (
+                    <circle cx={x} cy={y} r={petalR} fill="none" stroke={sys.color} strokeOpacity="0.4" strokeWidth="1" className="pulse-ring" />
+                  )}
+                  <circle
+                    cx={x} cy={y} r={petalR}
+                    fill={isPopulated ? sys.color : 'rgba(20,22,40,0.7)'}
+                    fillOpacity={isPopulated ? 0.18 : 1}
+                    stroke={sys.color}
+                    strokeOpacity={isLocked ? 0.3 : (isPopulated ? 1 : 0.55)}
+                    strokeWidth="1.5"
+                  />
+                  {isLocked ? (
+                    <>
+                      <text x={x} y={y - 4} textAnchor="middle"
+                            fontSize="10" letterSpacing="0.2em"
+                            fill="rgba(232,228,220,0.5)">
+                        LOCKED
+                      </text>
+                      <text x={x} y={y + 14} textAnchor="middle"
+                            fontSize="11" fontWeight="500"
+                            fill="rgba(232,228,220,0.7)">
+                        {sys.label}
+                      </text>
+                    </>
+                  ) : isPopulated ? (
+                    <>
+                      <text x={x} y={y - 6} textAnchor="middle"
+                            fontSize="9" letterSpacing="0.2em"
+                            fill="rgba(232,228,220,0.6)">
+                        {sys.label.toUpperCase()}
+                      </text>
+                      <text x={x} y={y + 14} textAnchor="middle"
+                            fontSize="13" fontWeight="600"
+                            fill={sys.color}>
+                        {truncate(s.user_value || s.data_snapshot?.primary || '—', 14)}
+                      </text>
+                    </>
+                  ) : (
+                    <>
+                      <text x={x} y={y - 2} textAnchor="middle"
+                            fontSize="22" fill={sys.color}>+</text>
+                      <text x={x} y={y + 16} textAnchor="middle"
+                            fontSize="10" letterSpacing="0.15em"
+                            fill="rgba(232,228,220,0.6)">
+                        {sys.label.toUpperCase()}
+                      </text>
+                    </>
+                  )}
+                </g>
+              );
+            })}
+
+            {/* Center hub */}
+            <circle cx={c} cy={c} r={52} fill="rgba(4,5,10,0.85)" stroke="#c9a96e" strokeWidth="1.5" />
+            <text x={c} y={c - 4} textAnchor="middle" fontSize="10" letterSpacing="0.25em" fill="rgba(201,169,110,0.7)">
+              YOUR
+            </text>
+            <text x={c} y={c + 14} textAnchor="middle" fontFamily="Cormorant Garamond" fontSize="20" fill="#c9a96e">
+              Profile
+            </text>
+          </svg>
+        </div>
+      );
+    }
+
+    function truncate(s, n) {
+      if (!s) return '—';
+      return s.length > n ? s.slice(0, n - 1) + '…' : s;
+    }
+
+    // ---------- System detail view (Tier 2) ----------
+    function SystemDetail({ sys, record, onClose }) {
+      const snap = record?.data_snapshot || {};
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="glass rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <p className="small-caps mb-1" style={{ color: sys.color }}>{sys.label}</p>
+                <h2 className="display-title text-4xl">{snap.primary || sys.label}</h2>
+              </div>
+              <button onClick={onClose} className="text-muted hover:text-ink text-2xl leading-none">×</button>
+            </div>
+            <p className="text-muted text-sm mb-6">{sys.blurb}</p>
+
+            <div className="grid sm:grid-cols-2 gap-3 mb-8">
+              {(snap.dimensions || []).map((d, i) => (
+                <div key={i} className="glass rounded-xl p-4">
+                  <p className="small-caps text-muted mb-1">{d.label}</p>
+                  <p className="font-medium text-lg" style={{ color: sys.color }}>{d.value}</p>
+                  {d.qualities && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {d.qualities.map((q, j) => (
+                        <span key={j} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(232,228,220,0.06)' }}>{q}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-white/5 pt-5 text-xs text-muted">
+              <p className="small-caps mb-2 text-gold">Audit trail</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div><span className="text-muted">Source:</span> <span className="text-ink">{record?.source_api || '—'}</span></div>
+                <div><span className="text-muted">Fetched:</span> <span className="text-ink">{record?.fetched_date ? new Date(record.fetched_date).toLocaleString() : '—'}</span></div>
+                <div><span className="text-muted">Fallback:</span> <span className="text-ink">{record?.fallback_active ? `yes (${record.fallback_source})` : 'no'}</span></div>
+                <div><span className="text-muted">Stale:</span> <span className="text-ink">{record?.is_stale ? 'yes' : 'no'}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- Paywall modal ----------
+    function PaywallModal({ onClose, onUpgrade }) {
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="glass rounded-2xl max-w-lg w-full p-8 text-center" onClick={(e) => e.stopPropagation()}>
+            <p className="small-caps text-gold mb-3">Temenos Pro</p>
+            <h2 className="display-title text-4xl mb-3">Unlock five more lenses</h2>
+            <p className="text-muted mb-6">Add Enneagram, MBTI, Spirit Animal, Numerology, and Blood Type — one system at a time, with full audit metadata.</p>
+            <button onClick={onUpgrade} className="btn-gold w-full py-3 rounded-xl small-caps">Upgrade to Pro</button>
+            <button onClick={onClose} className="small-caps text-muted mt-4 hover:text-ink">Maybe later</button>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- External system modal (paid tier — add a custom system) ----------
+    function ExternalSystemModal({ sys, user, onClose, onAdded }) {
+      const [step, setStep] = useState('external'); // external -> enter
+      const [value, setValue] = useState('');
+      const [working, setWorking] = useState(false);
+      const [error, setError] = useState(null);
+
+      async function submit(e) {
+        e?.preventDefault();
+        if (!value.trim()) { setError('Please enter your value.'); return; }
+        setError(null); setWorking(true);
+        try {
+          const payload = await fetchSystemData(sys.key, {}, value.trim());
+          await upsertSystem(user.id, payload);
+          onAdded();
+        } catch (err) {
+          setError(err.message || 'Could not save your value.');
+        } finally { setWorking(false); }
+      }
+
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="glass rounded-2xl max-w-xl w-full p-8" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <p className="small-caps mb-1" style={{ color: sys.color }}>{sys.label}</p>
+                <h2 className="display-title text-3xl">Add to your mandala</h2>
+              </div>
+              <button onClick={onClose} className="text-muted hover:text-ink text-2xl leading-none">×</button>
+            </div>
+            <p className="text-muted text-sm mb-6">{sys.blurb}</p>
+
+            {step === 'external' && sys.external && (
+              <div className="space-y-4">
+                <p className="text-sm">First, find your type at the linked source:</p>
+                <a href={sys.external} target="_blank" rel="noopener noreferrer"
+                   className="btn-ghost block text-center px-4 py-3 rounded-xl small-caps">
+                  Open {new URL(sys.external).hostname.replace('www.','')} ↗
+                </a>
+                <button onClick={() => setStep('enter')} className="btn-gold w-full py-3 rounded-xl small-caps">
+                  I found my type — continue
+                </button>
+              </div>
+            )}
+            {(step === 'enter' || !sys.external) && (
+              <form onSubmit={submit} className="space-y-4">
+                <label className="small-caps block">Enter your {sys.label} value</label>
+                <input
+                  autoFocus value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  placeholder={placeholderFor(sys.key)}
+                  className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none transition"
+                />
+                <button type="submit" disabled={working} className="btn-gold w-full py-3 rounded-xl small-caps">
+                  {working ? 'Adding…' : 'Add to mandala'}
+                </button>
+                {error && <p className="text-ember text-sm text-center">{error}</p>}
+              </form>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function placeholderFor(key) {
+      switch (key) {
+        case 'enneagram': return 'e.g. 4';
+        case 'mbti':      return 'e.g. INFJ';
+        case 'spirit_animal': return 'e.g. Hawk';
+        case 'numerology': return 'e.g. 7';
+        case 'blood_type': return 'e.g. O';
+        default: return '';
+      }
+    }
+
+    // ---------- Settings ----------
+    function SettingsPanel({ profile, user, onClose, onUpdated }) {
+      const [date, setDate] = useState(profile?.birth_date || '');
+      const [time, setTime] = useState(profile?.birth_time?.slice(0,5) || '12:00');
+      const [place, setPlace] = useState(profile?.birth_place || '');
+      const [timeIsGuess, setTimeIsGuess] = useState(!!profile?.birth_time_is_guess);
+      const [working, setWorking] = useState(false);
+      const [error, setError] = useState(null);
+      const [okMsg, setOkMsg] = useState(null);
+
+      async function save() {
+        setWorking(true); setError(null); setOkMsg(null);
+        try {
+          if (supabase) {
+            const { error: e1 } = await supabase.from('users_v2').update({
+              birth_date: date, birth_time: time, birth_place: place,
+              birth_time_is_guess: timeIsGuess,
+              profile_updated_at: new Date().toISOString(),
+            }).eq('id', user.id);
+            if (e1) throw e1;
+            // Refetch 4 core systems with new birth info
+            const birth = { birth_date: date, birth_time: time, birth_place: place };
+            const core = SYSTEMS.catalog.filter(s => s.tier === 'core');
+            for (const sys of core) {
+              const payload = await fetchSystemData(sys.key, birth, null);
+              await upsertSystem(user.id, payload);
+            }
+          }
+          setOkMsg('Saved — your mandala has been refreshed.');
+          onUpdated();
+        } catch (err) {
+          setError(err.message || 'Could not save.');
+        } finally { setWorking(false); }
+      }
+
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="glass rounded-2xl max-w-xl w-full p-8 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="display-title text-3xl">Settings</h2>
+              <button onClick={onClose} className="text-muted hover:text-ink text-2xl leading-none">×</button>
+            </div>
+            <section className="mb-8">
+              <p className="small-caps text-gold mb-4">Birth Information</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="small-caps block mb-2">Birth date</label>
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
+                         className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none transition" />
+                </div>
+                <div>
+                  <label className="small-caps block mb-2">Birth place</label>
+                  <input type="text" value={place} onChange={(e) => setPlace(e.target.value)}
+                         className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none transition" />
+                </div>
+                <div>
+                  <label className="small-caps block mb-2">Birth time</label>
+                  <input type="time" value={time} onChange={(e) => setTime(e.target.value)}
+                         className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none transition" />
+                  <label className="flex items-center gap-2 mt-3 text-muted text-sm cursor-pointer">
+                    <input type="checkbox" checked={timeIsGuess} onChange={(e) => setTimeIsGuess(e.target.checked)} className="accent-gold" />
+                    Approximate / best guess
+                  </label>
+                </div>
+                <button onClick={save} disabled={working} className="btn-gold w-full py-3 rounded-xl small-caps">
+                  {working ? 'Refreshing systems…' : 'Save & recompute'}
+                </button>
+                {error && <p className="text-ember text-sm text-center">{error}</p>}
+                {okMsg && <p className="text-teal text-sm text-center">{okMsg}</p>}
+              </div>
+            </section>
+            <section className="mb-4">
+              <p className="small-caps text-gold mb-2">Subscription</p>
+              <p className="text-sm text-muted">Current plan: <span className="text-ink">{profile?.subscription_tier || 'free'}</span></p>
+            </section>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- Profile / Mandala home ----------
+    function ProfileView({ user, profile, systems, onSignOut, refresh }) {
+      const [selected, setSelected]   = useState(null); // { sys, record }
+      const [paywall, setPaywall]     = useState(false);
+      const [addSys, setAddSys]       = useState(null);
+      const [settings, setSettings]   = useState(false);
+
+      const subscribed = !!profile?.subscription_active;
+
+      async function handleUpgrade() {
+        // MVP: flip the boolean directly. Replace with Stripe checkout in production.
+        if (supabase) {
+          await supabase.from('users_v2').update({
+            subscription_active: true,
+            subscription_tier: 'pro',
+          }).eq('id', user.id);
+        }
+        setPaywall(false);
+        refresh();
+      }
+
+      return (
+        <div className="min-h-screen p-6 md:p-10">
+          <header className="flex items-center justify-between mb-8">
+            <a href="index.html" className="display-title text-2xl text-gold">Temenos</a>
+            <div className="flex items-center gap-3">
+              {!subscribed && (
+                <button onClick={() => setPaywall(true)} className="btn-ghost px-4 py-2 rounded-full small-caps">
+                  Upgrade
+                </button>
+              )}
+              <button onClick={() => setSettings(true)} className="btn-ghost px-4 py-2 rounded-full small-caps">
+                Settings
+              </button>
+              <button onClick={onSignOut} className="small-caps text-muted hover:text-ink">Sign out</button>
+            </div>
+          </header>
+
+          <div className="max-w-4xl mx-auto text-center mb-8">
+            <p className="small-caps text-gold mb-2">Your mandala</p>
+            <h1 className="display-title text-4xl md:text-5xl mb-2">
+              {(user?.email || 'You').split('@')[0]}
+            </h1>
+            <p className="text-muted text-sm">Tap any petal to dive into that lens of yourself.</p>
+          </div>
+
+          <Mandala
+            systems={systems}
+            profile={profile}
+            onSelect={(sys, record) => {
+              if (record) setSelected({ sys, record });
+              else setAddSys(sys);
+            }}
+            onLockedClick={() => setPaywall(true)}
+          />
+
+          <div className="max-w-3xl mx-auto mt-10 text-center text-muted text-xs">
+            {subscribed
+              ? 'You have access to all 9 systems. Tap a locked petal to add it.'
+              : 'Four core systems unlocked. Five more await with Pro.'}
+          </div>
+
+          {selected   && <SystemDetail sys={selected.sys} record={selected.record} onClose={() => setSelected(null)} />}
+          {addSys     && <ExternalSystemModal sys={addSys} user={user} onClose={() => setAddSys(null)}
+                          onAdded={() => { setAddSys(null); refresh(); }} />}
+          {paywall    && <PaywallModal onClose={() => setPaywall(false)} onUpgrade={handleUpgrade} />}
+          {settings   && <SettingsPanel profile={profile} user={user} onClose={() => setSettings(false)}
+                          onUpdated={() => { refresh(); }} />}
+        </div>
+      );
+    }
+
+    // ---------- Loading splash ----------
+    function Splash({ label }) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="display-title text-3xl text-gold mb-4">Temenos</div>
+            <p className="small-caps text-muted">{label || 'Loading…'}</p>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- App root ----------
+    function App() {
+      const { user, loading: authLoading, sendMagicLink, signOut } = useAuth();
+      const { profile, systems, loading: profileLoading, refresh } = useProfile(user);
+
+      if (!HAS_SUPABASE && !user) {
+        // Demo mode: no Supabase keys — let the user explore the mandala with mock data.
+        return <DemoApp />;
+      }
+      if (authLoading) return <><CosmicBackdrop /><Splash label="Opening the sacred space…" /></>;
+      if (!user) return <><CosmicBackdrop /><MagicLinkScreen onLoginAttempt={sendMagicLink} /></>;
+      if (profileLoading) return <><CosmicBackdrop /><Splash label="Drawing your mandala…" /></>;
+      if (!profile?.birth_date) return <><CosmicBackdrop /><BirthInfoForm user={user} onSaved={refresh} /></>;
+
+      return (
+        <>
+          <CosmicBackdrop />
+          <ProfileView user={user} profile={profile} systems={systems}
+                        onSignOut={signOut} refresh={refresh} />
+        </>
+      );
+    }
+
+    // ---------- Demo mode (no Supabase) — local-state mandala ----------
+    function DemoApp() {
+      const [step, setStep] = useState('hello'); // hello -> birth -> mandala
+      const [profile, setProfile] = useState({ subscription_active: false, subscription_tier: 'free' });
+      const [systems, setSystems] = useState([]);
+      const [user] = useState({ id: 'demo', email: 'demo@temenos.app' });
+
+      function onBirthSaved(birth) {
+        setProfile(p => ({ ...p, ...birth }));
+        const core = SYSTEMS.catalog.filter(s => s.tier === 'core');
+        Promise.all(core.map(s => fetchSystemData(s.key, birth, null))).then(setSystems);
+        setStep('mandala');
+      }
+      function refresh() { /* no-op in demo */ }
+
+      if (step === 'hello') {
+        return (
+          <>
+            <CosmicBackdrop />
+            <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+              <a href="index.html" className="display-title text-3xl text-gold mb-10">Temenos</a>
+              <div className="glass rounded-2xl p-8 max-w-md w-full">
+                <p className="small-caps text-ember mb-3">Demo mode</p>
+                <h1 className="display-title text-3xl mb-3">Explore without signing in</h1>
+                <p className="text-muted text-sm mb-6">
+                  Supabase isn’t configured, so this is a local-only preview of the mandala using fallback data.
+                  Copy <code className="text-gold">js/config.example.js</code> to <code className="text-gold">js/config.js</code> and add your keys to enable real auth.
+                </p>
+                <button onClick={() => setStep('birth')} className="btn-gold w-full py-3 rounded-xl small-caps">
+                  Try the demo
+                </button>
+              </div>
+            </div>
+          </>
+        );
+      }
+      if (step === 'birth') {
+        return (
+          <>
+            <CosmicBackdrop />
+            <DemoBirthForm onSaved={onBirthSaved} />
+          </>
+        );
+      }
+      return (
+        <>
+          <CosmicBackdrop />
+          <DemoProfileView profile={profile} systems={systems}
+                           setProfile={setProfile} setSystems={setSystems}
+                           user={user} refresh={refresh} />
+        </>
+      );
+    }
+
+    function DemoBirthForm({ onSaved }) {
+      const [date, setDate] = useState('1995-09-15');
+      const [time, setTime] = useState('12:00');
+      const [place, setPlace] = useState('London, UK');
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center p-6">
+          <div className="glass rounded-2xl p-8 max-w-lg w-full">
+            <p className="small-caps text-gold text-center mb-3">Demo</p>
+            <h1 className="display-title text-4xl text-center mb-6">Your birth chart</h1>
+            <div className="space-y-4">
+              <input type="date" value={date} onChange={e=>setDate(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none" />
+              <input type="text" value={place} onChange={e=>setPlace(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none" />
+              <input type="time" value={time} onChange={e=>setTime(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none" />
+              <button onClick={() => onSaved({ birth_date: date, birth_time: time, birth_place: place })}
+                      className="btn-gold w-full py-3 rounded-xl small-caps">Reveal my mandala</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function DemoProfileView({ profile, systems, setProfile, setSystems, user }) {
+      const [selected, setSelected] = useState(null);
+      const [paywall, setPaywall] = useState(false);
+      const [addSys, setAddSys] = useState(null);
+      const [settings, setSettings] = useState(false);
+
+      const upgrade = () => { setProfile(p => ({ ...p, subscription_active: true, subscription_tier: 'pro' })); setPaywall(false); };
+
+      const addToMandala = async (sys, value) => {
+        const payload = await fetchSystemData(sys.key, profile, value);
+        setSystems(prev => {
+          const filtered = prev.filter(s => s.system_name !== sys.key);
+          return [...filtered, payload];
+        });
+        setAddSys(null);
+      };
+
+      return (
+        <div className="min-h-screen p-6 md:p-10">
+          <header className="flex items-center justify-between mb-8">
+            <a href="index.html" className="display-title text-2xl text-gold">Temenos</a>
+            <div className="flex items-center gap-3">
+              {!profile.subscription_active && (
+                <button onClick={() => setPaywall(true)} className="btn-ghost px-4 py-2 rounded-full small-caps">Upgrade</button>
+              )}
+              <button onClick={() => setSettings(true)} className="btn-ghost px-4 py-2 rounded-full small-caps">Settings</button>
+            </div>
+          </header>
+
+          <div className="max-w-4xl mx-auto text-center mb-8">
+            <p className="small-caps text-ember mb-2">Demo Mode</p>
+            <h1 className="display-title text-4xl md:text-5xl mb-2">Your mandala</h1>
+            <p className="text-muted text-sm">Tap any petal to explore.</p>
+          </div>
+
+          <Mandala
+            systems={systems}
+            profile={profile}
+            onSelect={(sys, record) => {
+              if (record) setSelected({ sys, record });
+              else setAddSys(sys);
+            }}
+            onLockedClick={() => setPaywall(true)}
+          />
+
+          {selected   && <SystemDetail sys={selected.sys} record={selected.record} onClose={() => setSelected(null)} />}
+          {addSys     && <DemoAddModal sys={addSys} onClose={() => setAddSys(null)} onAdd={(v) => addToMandala(addSys, v)} />}
+          {paywall    && <PaywallModal onClose={() => setPaywall(false)} onUpgrade={upgrade} />}
+          {settings   && <DemoSettings profile={profile} setProfile={setProfile} setSystems={setSystems} onClose={() => setSettings(false)} />}
+        </div>
+      );
+    }
+
+    function DemoAddModal({ sys, onClose, onAdd }) {
+      const [value, setValue] = useState('');
+      const [step, setStep] = useState(sys.external ? 'external' : 'enter');
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="glass rounded-2xl max-w-xl w-full p-8" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <p className="small-caps mb-1" style={{ color: sys.color }}>{sys.label}</p>
+                <h2 className="display-title text-3xl">Add to your mandala</h2>
+              </div>
+              <button onClick={onClose} className="text-muted hover:text-ink text-2xl leading-none">×</button>
+            </div>
+            <p className="text-muted text-sm mb-6">{sys.blurb}</p>
+            {step === 'external' && (
+              <div className="space-y-4">
+                <a href={sys.external} target="_blank" rel="noopener noreferrer" className="btn-ghost block text-center px-4 py-3 rounded-xl small-caps">
+                  Open {new URL(sys.external).hostname.replace('www.','')} ↗
+                </a>
+                <button onClick={() => setStep('enter')} className="btn-gold w-full py-3 rounded-xl small-caps">I found my type — continue</button>
+              </div>
+            )}
+            {step === 'enter' && (
+              <form onSubmit={(e) => { e.preventDefault(); if (value.trim()) onAdd(value.trim()); }} className="space-y-4">
+                <input autoFocus value={value} onChange={(e) => setValue(e.target.value)}
+                       placeholder={placeholderFor(sys.key)}
+                       className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:border-gold focus:outline-none transition" />
+                <button type="submit" className="btn-gold w-full py-3 rounded-xl small-caps">Add to mandala</button>
+              </form>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function DemoSettings({ profile, setProfile, setSystems, onClose }) {
+      const [date, setDate]   = useState(profile.birth_date || '');
+      const [time, setTime]   = useState(profile.birth_time || '12:00');
+      const [place, setPlace] = useState(profile.birth_place || '');
+      function save() {
+        const birth = { birth_date: date, birth_time: time, birth_place: place };
+        setProfile(p => ({ ...p, ...birth }));
+        const core = SYSTEMS.catalog.filter(s => s.tier === 'core');
+        Promise.all(core.map(s => fetchSystemData(s.key, birth, null))).then(rows => {
+          setSystems(prev => {
+            const nonCore = prev.filter(p => !core.find(c => c.key === p.system_name));
+            return [...rows, ...nonCore];
+          });
+        });
+        onClose();
+      }
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="glass rounded-2xl max-w-xl w-full p-8" onClick={(e) => e.stopPropagation()}>
+            <h2 className="display-title text-3xl mb-6">Settings</h2>
+            <div className="space-y-4">
+              <input type="date" value={date} onChange={e=>setDate(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10" />
+              <input type="text" value={place} onChange={e=>setPlace(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10" />
+              <input type="time" value={time} onChange={e=>setTime(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-black/30 border border-white/10" />
+              <button onClick={save} className="btn-gold w-full py-3 rounded-xl small-caps">Save & recompute</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- Mount ----------
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
